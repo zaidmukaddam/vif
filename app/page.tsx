@@ -1,8 +1,8 @@
-import Todo from "@/components/Todo";
+import Todo from "@/components/todo/index";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="h-full bg-background">
       <Todo />
     </main>
   );

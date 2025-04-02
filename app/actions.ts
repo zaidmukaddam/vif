@@ -12,12 +12,12 @@ interface TodoItem {
     date: Date;
 }
 
-export async function determineAction(text: string, emoji?: string, todos?: TodoItem[]) {
+export async function determineAction(text: string, emoji?: string, todos?: TodoItem[], model: string = "llama-3.3-70b-versatile") {
     console.log("Determining action...");
     console.log(text, emoji, todos);
     const startTime = Date.now();
     const { object: action } = await generateObject({
-        model: groq("llama-3.3-70b-versatile"),
+        model: groq(model),
         temperature: 0,
         schema: z.object({
             action: z.enum(["add", "delete", "complete", "sort", "edit", "clear"]).describe("The action to take"),
@@ -49,6 +49,7 @@ export async function determineAction(text: string, emoji?: string, todos?: Todo
         - If the action is "clear", the user wants to clear the list of todos with the given listToClear(all, completed, incomplete).
         
         For the add action, the text should be in the future tense. like "buy groceries", "make a post with @theo", "go for violin lesson"
+        ${emoji ? `Change the emoji to a more appropriate based on the text. The current emoji is: ${emoji}` : ""}
      
         Some queries will be ambiguous stating the tense of the text, which will allow you to infer the correct action to take on the todo list. 
         The add requests will mostly likey to be in the future tense, while the complete requests will be in the past tense.
@@ -66,10 +67,7 @@ export async function determineAction(text: string, emoji?: string, todos?: Todo
         "original text: 'buy groceries', user request: 'i meant buy flowers', edit: 'buy flowers'"
         "original text: 'go for violin lesson', user request: 'i meant go for a walk', edit: 'go for a walk'"
         "original text: 'call for bug report', user request: 'i meant call bharat for it', edit: 'call bharat for bug report'"
-        "original text: 'meeting with zaid', user request: 'meet is about the new product', edit: 'meeting with zaid about the new product'"
-
-        ${emoji ? `Change the emoji to a more appropriate based on the text. The current emoji is: ${emoji}` : ""}
-        `,
+        "original text: 'meeting with zaid', user request: 'meet is about the new product', edit: 'meeting with zaid about the new product'"`,
     });
     const endTime = Date.now();
     const duration = endTime - startTime;
