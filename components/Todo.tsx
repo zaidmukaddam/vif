@@ -136,20 +136,46 @@ function CircularProgress({ progress, size = 20 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
-
+  
   const getProgressColor = () => {
     if (progress === 100) return "text-green-500";
     if (progress > 0) return "text-blue-500";
     return "text-muted-foreground";
   };
 
+  // Get color values for conic gradient
+  const getColorValue = () => {
+    if (progress === 100) return "#22c55e"; // green-500
+    if (progress > 0) return "#3b82f6";     // blue-500
+    return "#a1a1aa";                       // muted foreground default
+  };
+  
+  // Use consistent transition for both elements
+  const transitionTiming = "transition-all duration-200 ease-out";
+  
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div 
+      className="relative" 
+      style={{ width: size, height: size }}
+    >
+      {/* Pie background using conic-gradient for smooth transitions */}
+      <div 
+        className={cn(
+          "absolute inset-0 rounded-full",
+          transitionTiming
+        )}
+        style={{
+          background: `conic-gradient(${getColorValue()} ${progress}%, transparent ${progress}%)`,
+          opacity: progress > 0 ? 0.25 : 0
+        }}
+      />
+      
       <svg
-        className="transform -rotate-90"
         width={size}
         height={size}
+        viewBox={`0 0 ${size} ${size}`}
       >
+        {/* Background circle */}
         <circle
           className="text-muted-foreground/15"
           strokeWidth={strokeWidth}
@@ -159,10 +185,12 @@ function CircularProgress({ progress, size = 20 }: CircularProgressProps) {
           cx={size / 2}
           cy={size / 2}
         />
+        
+        {/* Progress ring */}
         <circle
           className={cn(
             getProgressColor(),
-            "transition-all duration-300 ease-in-out"
+            transitionTiming
           )}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
@@ -173,6 +201,7 @@ function CircularProgress({ progress, size = 20 }: CircularProgressProps) {
           r={radius}
           cx={size / 2}
           cy={size / 2}
+          transform={`rotate(-90 ${size/2} ${size/2})`}
         />
       </svg>
     </div>
@@ -586,6 +615,31 @@ export default function Todo() {
             }
           }
           break;
+          
+        case "clear":
+          if (action.listToClear) {
+            switch (action.listToClear) {
+              case "all":
+                // Clear all todos for the selected date
+                setTodos(todos.filter(todo => 
+                  format(todo.date, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd")
+                ));
+                break;
+              case "completed":
+                // Clear completed todos for the selected date
+                setTodos(todos.filter(todo => 
+                  !(todo.completed && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
+                ));
+                break;
+              case "incomplete":
+                // Clear incomplete todos for the selected date
+                setTodos(todos.filter(todo => 
+                  !((!todo.completed) && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
+                ));
+                break;
+            }
+          }
+          break;
       }
     } catch (error) {
       console.error("AI Action failed:", error);
@@ -807,7 +861,7 @@ export default function Todo() {
           <div className="space-y-1.5 bg-muted/50 p-3 rounded-xl">
             <h4 className="font-medium text-[15px]">What voice commands are supported?</h4>
             <p className="text-sm text-muted-foreground">
-              You can say "Add [task]", "Complete [task]", "Delete [task]", "Edit [task] to [new task]", and "Sort by [criterion]".
+              You can say "Add [task]", "Complete [task]", "Delete [task]", "Edit [task] to [new task]", "Sort by [criterion]", and "Clear [all/completed/incomplete]".
             </p>
           </div>
           <div className="space-y-1.5 bg-muted/50 p-3 rounded-xl">
@@ -1050,18 +1104,25 @@ export default function Todo() {
                   Actions
                 </div>
                 <DropdownMenuItem
-                  onClick={() => setTodos([])}
+                  onClick={() => handleAction("clear all")}
                   className="rounded-lg cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-100"
                 >
                   <Trash className="w-4 h-4 mr-2" />
                   <span>Clear All</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setTodos(todos.filter((todo) => !todo.completed))}
+                  onClick={() => handleAction("clear completed")}
                   className="rounded-lg cursor-pointer"
                 >
                   <Broom className="w-4 h-4 mr-2" />
                   <span>Clear Completed</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleAction("clear incomplete")}
+                  className="rounded-lg cursor-pointer"
+                >
+                  <Broom className="w-4 h-4 mr-2" />
+                  <span>Clear Incomplete</span>
                 </DropdownMenuItem>
               </div>
             </DropdownMenuContent>
