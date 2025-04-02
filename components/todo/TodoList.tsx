@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { X, PencilSimple, Check, Smiley } from "@phosphor-icons/react";
 import { CircleCheckbox } from "./CircleCheckbox";
 import { TodoListProps } from "@/types";
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import {
   Popover,
   PopoverContent,
@@ -32,6 +32,23 @@ export function TodoList({
 }: TodoListProps) {
   // Create a reference for the edit input
   const editInputRef = useRef<HTMLInputElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Effect to detect mobile screens
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
 
   // Create a memoized handler for input changes
   const handleEditInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,7 +185,10 @@ export function TodoList({
               <Button
                 variant="ghost"
                 size="icon"
-                className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 text-muted-foreground hover:text-foreground"
+                className={cn(
+                  "h-7 w-7 text-muted-foreground hover:text-foreground",
+                  isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"
+                )}
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation(); // Prevent toggle when clicking edit
                   onEdit(todo.id, todo.text, todo.emoji);
@@ -179,7 +199,10 @@ export function TodoList({
               <Button
                 variant="ghost"
                 size="icon"
-                className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 text-muted-foreground hover:text-destructive"
+                className={cn(
+                  "h-7 w-7 text-muted-foreground hover:text-destructive",
+                  isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"
+                )}
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation(); // Prevent toggle when clicking delete
                   onDelete(todo.id);
