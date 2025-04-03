@@ -649,7 +649,7 @@ export default function Todo() {
               onKeyUp={handleInputKeyUp}
               onKeyDown={handleInputKeyUp}
               className={cn(
-                "flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 h-9 rounded-none shadow-none px-2",
+                "flex-1 border-0 !bg-transparent focus:!outline-none focus:!ring-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 h-9 rounded-none shadow-none px-2",
                 isLoading && "text-muted-foreground"
               )}
               disabled={isLoading || isProcessingSpeech}
