@@ -87,13 +87,13 @@ export function TodoList({
         >
           {editingTodoId === todo.id ? (
             <>
-              <div className="flex-1 flex items-center gap-2">
+              <div className="flex-1 flex items-center gap-3 bg-transparent px-1">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 shrink-0 rounded-none hover:bg-muted"
+                      className="h-9 w-9 shrink-0 hover:bg-muted"
                     >
                       {editEmoji ? (
                         <span>{editEmoji}</span>
@@ -103,7 +103,7 @@ export function TodoList({
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent
-                    className="w-[280px] p-0 rounded-lg"
+                    className="w-[280px] p-0"
                     side="top"
                     align="start"
                     sideOffset={12}
@@ -136,13 +136,13 @@ export function TodoList({
                     }
                   }}
                   autoFocus
-                  className="flex-1 h-9 py-0 text-sm bg-transparent border-0 shadow-none focus-visible:ring-0 px-0"
+                  className="flex-1 h-9 py-0 text-sm bg-transparent border-0 shadow-none focus-visible:ring-0 px-2 rounded-none"
                   placeholder="Edit todo..."
                 />
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted-foreground/10"
+                  className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground rounded-none hover:bg-muted"
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     handleEditTodo(todo.id);
