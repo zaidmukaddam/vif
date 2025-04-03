@@ -29,6 +29,7 @@
     "frimousse": "^0.1.1",
     "lucide-react": "^0.486.0",
     "next": "15.2.4",
+    "next-themes": "^0.4.6",
     "orate": "^2.0.3",
     "react": "^19.0.0",
     "react-day-picker": "8.10.1",

@@ -85,6 +85,7 @@ import { InputLoadingIndicator } from "./InputLoadingIndicator";
 import { MicButton } from "./MicButton";
 import { FaqContent } from "./FaqContent";
 import { EmptyState } from "./EmptyState";
+import { ThemeToggleButton } from "@/components/theme-toggle";
 
 export default function Todo() {
   const [isLoading, setIsLoading] = useState(false);
@@ -508,7 +509,7 @@ export default function Todo() {
                 </div>
                 <DropdownMenuItem
                   onClick={() => clearAllTodos()}
-                  className="rounded-lg cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-100"
+                  className="rounded-lg cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-100 dark:hover:bg-red-900/50 dark:hover:text-red-400"
                 >
                   <Trash className="w-4 h-4 mr-2" />
                   <span>Clear All</span>
@@ -527,6 +528,16 @@ export default function Todo() {
                   <Broom className="w-4 h-4 mr-2" />
                   <span>Clear Incomplete</span>
                 </DropdownMenuItem>
+              </div>
+
+              {/* Appearance Section (Light/Dark Mode) */}
+              <div className="space-y-0.5">
+                <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
+                  Appearance
+                </div>
+                <div className="px-2 py-1.5 flex justify-start">
+                  <ThemeToggleButton />
+                </div>
               </div>
 
               <DropdownMenuSeparator className="my-1.5" />
