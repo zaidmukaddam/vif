@@ -530,6 +530,8 @@ export default function Todo() {
                 </DropdownMenuItem>
               </div>
 
+              <DropdownMenuSeparator className="my-1.5" />
+
               {/* Appearance Section (Light/Dark Mode) */}
               <div className="space-y-0.5">
                 <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
