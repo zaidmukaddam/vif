@@ -23,7 +23,7 @@ export async function determineAction(text: string, emoji?: string, todos?: Todo
         temperature: 0,
         providerOptions: {
             groq: {
-                "service_tier": "flex",
+                "service_tier": "auto",
             }
         },
         schema: z.object({
