@@ -44,12 +44,18 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "axios": "^1.8.4",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
   "pnpm": {
-    "ignoredBuiltDependencies": [
-      "sharp"
+    "onlyBuiltDependencies": [
+      "sharp",
+      "bufferutil",
+      "es5-ext",
+      "esbuild",
+      "protobufjs",
+      "utf-8-validate"
     ]
   }
 }

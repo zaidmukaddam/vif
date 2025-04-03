@@ -24,6 +24,12 @@ export function FaqContent({}: FaqContentProps) {
               They remain in your list but are marked as complete. You can clear all completed tasks from the list menu.
             </p>
           </div>
+          <div className="space-y-1.5 bg-muted/50 p-3.5 rounded-2xl">
+            <h4 className="font-medium text-[15px]">Where can I find the source code?</h4>
+            <p className="text-sm text-muted-foreground">
+              Vif is an open source project. You can find the source code on <a href="https://github.com/zaidmukaddam/vif" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GitHub</a>.
+            </p>
+          </div>
         </div>
       </div>
       
