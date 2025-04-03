@@ -3,6 +3,8 @@
 import { generateObject } from "ai";
 import { z } from "zod";
 import { groq } from "@ai-sdk/groq";
+import { transcribe } from "orate";
+import { ElevenLabs } from 'orate/elevenlabs';
 
 interface TodoItem {
     id: string;
@@ -78,64 +80,22 @@ export async function determineAction(text: string, emoji?: string, todos?: Todo
 
 export async function convertSpeechToText(audioFile: any) {
     "use server";
-    
-    const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-    
-    if (!ELEVENLABS_API_KEY) {
-        throw new Error("ElevenLabs API key is not set");
+
+    if (!audioFile) {
+        throw new Error("No audio file provided");
     }
-    
-    try {
-        if (!audioFile) {
-            throw new Error("No audio file provided");
-        }
-        
-        console.log("Processing audio file:", {
-            type: audioFile.type,
-            size: audioFile.size,
-            name: audioFile.name || "unnamed"
-        });
-        
-        // Create a FormData to send to ElevenLabs
-        const formData = new FormData();
-        
-        // Add the file directly, no instanceof check needed
-        formData.append("file", audioFile);
-        formData.append("model_id", "scribe_v1");
 
-        console.log("Sending request to ElevenLabs API...");
-        const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
-            method: "POST",
-            headers: {
-                "xi-api-key": ELEVENLABS_API_KEY,
-            },
-            body: formData,
-        });
+    console.log("Processing audio file:", {
+        type: audioFile.type,
+        size: audioFile.size,
+        name: audioFile.name || "unnamed"
+    });
 
-        if (!response.ok) {
-            // Try to get more detailed error information
-            let errorDetail = "";
-            try {
-                const errorResponse = await response.text();
-                errorDetail = errorResponse;
-            } catch (e) {
-                errorDetail = "Could not parse error response";
-            }
-            
-            console.error("ElevenLabs API error:", {
-                status: response.status,
-                statusText: response.statusText,
-                detail: errorDetail
-            });
-            
-            throw new Error(`API error: ${response.status} - ${errorDetail}`);
-        }
+    const text = await transcribe({
+        model: new ElevenLabs().stt(),
+        audio: audioFile,
+    });
 
-        const data = await response.json();
-        console.log("ElevenLabs API response:", data);
-        return data.text || "";
-    } catch (error) {
-        console.error("Error converting speech to text:", error);
-        throw error;
-    }
+    console.log("Transcribed text:", text);
+    return text;
 }
