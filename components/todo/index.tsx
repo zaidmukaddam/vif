@@ -64,17 +64,17 @@ import { useMicrophonePermission } from "@/hooks/use-microphone-permission";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { determineAction } from "@/app/actions";
-import { 
-  TodoItem, 
-  SortOption, 
-  Model 
+import {
+  TodoItem,
+  SortOption,
+  Model
 } from "@/types";
-import { 
+import {
   filterTodosByDate,
   sortTodos,
   calculateProgress,
   formatDate,
-  serializeTodo 
+  serializeTodo
 } from "@/lib/utils/todo";
 
 // custom components
@@ -100,14 +100,14 @@ export default function Todo() {
   const [editEmoji, setEditEmoji] = useState("");
   const [showFaqDialog, setShowFaqDialog] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const micPermission = useMicrophonePermission();
   const {
     isRecording,
     isProcessingSpeech,
     startRecording,
-    stopRecording 
+    stopRecording
   } = useSpeechRecognition();
 
   // Add effect to indicate client-side hydration is complete
@@ -120,13 +120,13 @@ export default function Todo() {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     // Initial check
     checkIfMobile();
-    
+
     // Add event listener for window resize
     window.addEventListener('resize', checkIfMobile);
-    
+
     // Clean up
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
@@ -134,7 +134,7 @@ export default function Todo() {
   // Only process todos after client-side hydration
   const filteredTodos = isClientLoaded ? filterTodosByDate(todos, selectedDate) : [];
   const sortedTodos = isClientLoaded ? sortTodos(filteredTodos, sortBy) : [];
-  
+
   // Get statistics only after client-side hydration
   const completedCount = isClientLoaded ? filteredTodos.filter((todo) => todo.completed).length : 0;
   const remainingCount = isClientLoaded ? filteredTodos.filter((todo) => !todo.completed).length : 0;
@@ -146,65 +146,63 @@ export default function Todo() {
     setIsLoading(true);
     setNewTodo("");
 
+    let newTodos = [...todos];
+
     try {
-      const action = await determineAction(text, selectedEmoji || "", filteredTodos, selectedModel);
+      const actions = (await determineAction(text, selectedEmoji || "", filteredTodos, selectedModel)).actions;
+      actions.forEach((action) => {
+        switch (action.action) {
+          case "add":
+            newTodos.push(
+              serializeTodo({
+                id: Math.random().toString(36).substring(7),
+                text: action.text || text,
+                completed: false,
+                emoji: action.emoji || selectedEmoji,
+                date: selectedDate,
+              })
+            )
+            break;
 
-      switch (action.action) {
-        case "add":
-          setTodos([
-            ...todos,
-            serializeTodo({
-              id: Math.random().toString(36).substring(7),
-              text: action.text || text,
-              completed: false,
-              emoji: action.emoji || selectedEmoji,
-              date: selectedDate,
-            }),
-          ]);
-          break;
+          case "delete":
+            const todoToDelete = todos.find(
+              todo => todo.text.toLowerCase().includes(action.text?.toLowerCase() || "")
+            );
+            if (todoToDelete) {
+              newTodos = newTodos.filter(todo => todo.id !== todoToDelete.id);
+            }
+            break;
 
-        case "delete":
-          const todoToDelete = todos.find(
-            todo => todo.text.toLowerCase().includes(action.text?.toLowerCase() || "")
-          );
-          if (todoToDelete) {
-            setTodos(todos.filter(todo => todo.id !== todoToDelete.id));
-          }
-          break;
-
-        case "complete":
-          const todoToComplete = todos.find(
-            todo => todo.text.toLowerCase().includes(action.text?.toLowerCase() || "")
-          );
-          if (todoToComplete) {
-            setTodos(
-              todos.map(todo =>
+          case "complete":
+            const todoToComplete = todos.find(
+              todo => todo.text.toLowerCase().includes(action.text?.toLowerCase() || "")
+            );
+            if (todoToComplete) {
+              newTodos = newTodos.map(todo =>
                 todo.id === todoToComplete.id ? { ...todo, completed: !todo.completed } : todo
               )
-            );
-          }
-          break;
+            }
+            break;
 
-        case "sort":
-          if (action.sortBy) {
-            setSortBy(action.sortBy);
-          }
-          break;
+          case "sort":
+            if (action.sortBy) {
+              setSortBy(action.sortBy);
+            }
+            break;
 
-        case "edit":
-          if (action.targetText && action.text) {
-            const todoToEdit = todos.find(
-              todo => todo.text.toLowerCase().includes(action.targetText?.toLowerCase() || "")
-            );
-            console.log("AI editing todo:", {
-              targetText: action.targetText,
-              newText: action.text,
-              foundTodo: todoToEdit
-            });
+          case "edit":
+            if (action.targetText && action.text) {
+              const todoToEdit = todos.find(
+                todo => todo.text.toLowerCase().includes(action.targetText?.toLowerCase() || "")
+              );
+              console.log("AI editing todo:", {
+                targetText: action.targetText,
+                newText: action.text,
+                foundTodo: todoToEdit
+              });
 
-            if (todoToEdit) {
-              setTodos(
-                todos.map(todo => {
+              if (todoToEdit) {
+                newTodos = newTodos.map(todo => {
                   if (todo.id === todoToEdit.id) {
                     const updatedTodo = serializeTodo({ ...todo, text: action.text || "" });
                     console.log("AI updated todo:", updatedTodo);
@@ -212,36 +210,39 @@ export default function Todo() {
                   }
                   return todo;
                 })
-              );
+              }
             }
-          }
-          break;
-          
-        case "clear":
-          if (action.listToClear) {
-            switch (action.listToClear) {
-              case "all":
-                // Clear all todos for the selected date
-                setTodos(todos.filter(todo => 
-                  format(todo.date, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd")
-                ));
-                break;
-              case "completed":
-                // Clear completed todos for the selected date
-                setTodos(todos.filter(todo => 
-                  !(todo.completed && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
-                ));
-                break;
-              case "incomplete":
-                // Clear incomplete todos for the selected date
-                setTodos(todos.filter(todo => 
-                  !((!todo.completed) && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
-                ));
-                break;
+            break;
+
+          case "clear":
+            if (action.listToClear) {
+              switch (action.listToClear) {
+                case "all":
+                  // Clear all todos for the selected date
+                  setTodos(todos.filter(todo =>
+                    format(todo.date, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd")
+                  ));
+                  break;
+                case "completed":
+                  // Clear completed todos for the selected date
+                  setTodos(todos.filter(todo =>
+                    !(todo.completed && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
+                  ));
+                  break;
+                case "incomplete":
+                  // Clear incomplete todos for the selected date
+                  setTodos(todos.filter(todo =>
+                    !((!todo.completed) && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
+                  ));
+                  break;
+              }
             }
-          }
-          break;
-      }
+            break;
+        }
+      })
+
+      setTodos(newTodos);
+
     } catch (error) {
       console.error("AI Action failed:", error);
       setTodos([
@@ -291,8 +292,8 @@ export default function Todo() {
       setTodos(
         todos.map((todo) => {
           if (todo.id === id) {
-            const updatedTodo = serializeTodo({ 
-              ...todo, 
+            const updatedTodo = serializeTodo({
+              ...todo,
               text: editText,
               emoji: editEmoji
             });
@@ -309,19 +310,19 @@ export default function Todo() {
   };
 
   const clearAllTodos = () => {
-    setTodos(todos.filter(todo => 
+    setTodos(todos.filter(todo =>
       format(todo.date, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd")
     ));
   };
 
   const clearCompletedTodos = () => {
-    setTodos(todos.filter(todo => 
+    setTodos(todos.filter(todo =>
       !(todo.completed && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
     ));
   };
 
   const clearIncompleteTodos = () => {
-    setTodos(todos.filter(todo => 
+    setTodos(todos.filter(todo =>
       !(!todo.completed && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
     ));
   };
@@ -383,13 +384,13 @@ export default function Todo() {
           )}
         </div>
       </div>
-      
+
       <div className="-mx-4">
         <Suspense fallback={<TodoSkeleton />}>
           {!isClientLoaded ? (
             <TodoSkeleton />
           ) : sortedTodos.length === 0 && !isLoading ? (
-            <EmptyState 
+            <EmptyState
               selectedDate={selectedDate}
               focusInput={focusInput}
             />
@@ -633,7 +634,7 @@ export default function Todo() {
             {isLoading && <InputLoadingIndicator />}
             {isProcessingSpeech && <InputLoadingIndicator />}
 
-            <MicButton 
+            <MicButton
               isRecording={isRecording}
               isProcessingSpeech={isProcessingSpeech}
               micPermission={micPermission}
@@ -662,11 +663,11 @@ export default function Todo() {
                     Frequently asked questions about Vif
                   </DrawerDescription>
                 </DrawerHeader>
-                
+
                 <div className="overflow-auto max-h-[calc(80vh-140px)] rounded-xl border border-muted p-1 bg-background scrollbar-hide">
                   <FaqContent />
                 </div>
-                
+
                 <DrawerFooter className="mt-2 pb-6">
                   <div className="flex justify-end">
                     <DrawerClose asChild>
@@ -693,9 +694,9 @@ export default function Todo() {
               <DialogContent className="sm:max-w-md rounded-2xl border shadow-lg gap-2 p-3 [&>button]:hidden">
                 <div className="absolute right-4 top-4">
                   <DialogClose asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="h-7 w-7 rounded-full bg-muted hover:bg-muted/80 focus:ring-0"
                     >
                       <X className="w-3.5 h-3.5" weight="bold" />
@@ -703,18 +704,18 @@ export default function Todo() {
                     </Button>
                   </DialogClose>
                 </div>
-                
+
                 <DialogHeader className="pb-1 space-y-1">
                   <DialogTitle className="text-lg font-semibold">Help & FAQ</DialogTitle>
                   <DialogDescription className="text-muted-foreground text-sm">
                     Frequently asked questions about Vif
                   </DialogDescription>
                 </DialogHeader>
-                
+
                 <div className="overflow-auto max-h-[calc(80vh-140px)] my-3 pr-1 rounded-xl border border-muted/50 p-1 bg-background/50 scrollbar-hide">
                   <FaqContent />
                 </div>
-                
+
                 <DialogFooter className="flex items-center justify-end !mt-0 !pt-0">
                   <DialogClose asChild>
                     <Button variant="secondary" className="rounded-full px-5 h-9 w-full">
