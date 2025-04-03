@@ -20,19 +20,22 @@ export async function determineAction(text: string, emoji?: string, todos?: Todo
         model: groq(model),
         temperature: 0,
         schema: z.object({
-            action: z.enum(["add", "delete", "complete", "sort", "edit", "clear"]).describe("The action to take"),
-            text: z.string().describe("The text of the todo item").optional(),
-            emoji: z.string().describe("The emoji of the todo item").optional(),
-            sortBy: z.enum(
-                ["newest", "oldest", "alphabetical", "completed"]
-            ).describe("The sort order").optional(),
-            listToClear: z.enum(["all", "completed", "incomplete"]).describe("The list to clear").optional(),
-            targetText: z.string().describe("The exact given text of the todo item to edit. do not include the emoji.").optional(),
+            actions: z.array(z.object({
+                action: z.enum(["add", "delete", "complete", "sort", "edit", "clear"]).describe("The action to take"),
+                text: z.string().describe("The text of the todo item").optional(),
+                emoji: z.string().describe("The emoji of the todo item").optional(),
+                sortBy: z.enum(
+                    ["newest", "oldest", "alphabetical", "completed"]
+                ).describe("The sort order").optional(),
+                listToClear: z.enum(["all", "completed", "incomplete"]).describe("The list to clear").optional(),
+                targetText: z.string().describe("The exact given text of the todo item to edit. do not include the emoji.").optional(),
+            })),
         }),
         prompt: `
         The user has entered the following text: ${text}
         ${emoji ? `The user has also entered the following emoji: ${emoji}` : ""}
-        Determine the action to take based on the given context.
+        Determine the action or multiple actions to take based on the given context.
+        Return an array of actions.
 
         Don't make assumptions about the user's intent, the todo list is very important to understand the user's intent.
         Go through the todo list and make sure to understand the user's intent based on the todo list.
@@ -78,27 +81,27 @@ export async function determineAction(text: string, emoji?: string, todos?: Todo
 
 export async function convertSpeechToText(audioFile: any) {
     "use server";
-    
+
     const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-    
+
     if (!ELEVENLABS_API_KEY) {
         throw new Error("ElevenLabs API key is not set");
     }
-    
+
     try {
         if (!audioFile) {
             throw new Error("No audio file provided");
         }
-        
+
         console.log("Processing audio file:", {
             type: audioFile.type,
             size: audioFile.size,
             name: audioFile.name || "unnamed"
         });
-        
+
         // Create a FormData to send to ElevenLabs
         const formData = new FormData();
-        
+
         // Add the file directly, no instanceof check needed
         formData.append("file", audioFile);
         formData.append("model_id", "scribe_v1");
@@ -121,13 +124,13 @@ export async function convertSpeechToText(audioFile: any) {
             } catch (e) {
                 errorDetail = "Could not parse error response";
             }
-            
+
             console.error("ElevenLabs API error:", {
                 status: response.status,
                 statusText: response.statusText,
                 detail: errorDetail
             });
-            
+
             throw new Error(`API error: ${response.status} - ${errorDetail}`);
         }
 
