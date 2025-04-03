@@ -21,14 +21,20 @@ export async function determineAction(text: string, emoji?: string, todos?: Todo
     const { object: action } = await generateObject({
         model: groq(model),
         temperature: 0,
+        providerOptions: {
+            groq: {
+                "service_tier": "flex",
+            }
+        },
         schema: z.object({
             actions: z.array(z.object({
-                action: z.enum(["add", "delete", "complete", "sort", "edit", "clear"]).describe("The action to take"),
+                action: z.enum(["add", "delete", "mark", "sort", "edit", "clear",]).describe("The action to take"),
                 text: z.string().describe("The text of the todo item").optional(),
                 emoji: z.string().describe("The emoji of the todo item").optional(),
                 sortBy: z.enum(
                     ["newest", "oldest", "alphabetical", "completed"]
                 ).describe("The sort order").optional(),
+                status: z.enum(["complete", "incomplete"]).describe("The status of the todo item. to be used for the mark action").optional(),
                 listToClear: z.enum(["all", "completed", "incomplete"]).describe("The list to clear").optional(),
                 targetText: z.string().describe("The exact given text of the todo item to edit. do not include the emoji.").optional(),
             })),
@@ -45,10 +51,10 @@ export async function determineAction(text: string, emoji?: string, todos?: Todo
 
         ${todos ? `<todo_list>${todos?.map(todo => `${todo.text} (${todo.emoji})`).join(", ")}</todo_list>` : ""}
 
-        The action should be one of the following: ${["add", "delete", "complete", "sort", "edit"].join(", ")}
+        The action should be one of the following: ${["add", "delete", "mark", "sort", "edit", "clear"].join(", ")}
         - If the action is "add", the text and emoji should be included.
         - If the action is "delete", the text should be included.
-        - If the action is "complete", the text should be included.
+        - If the action is "mark", the text should be included and the status should be "complete" or "incomplete".
         - If the action is "sort", the sortBy should be included.
         - If the action is "edit", both the targetText (to identify the todo to edit) and the text (the new content) should be included.
         - If the action is "clear", the user wants to clear the list of todos with the given listToClear(all, completed, incomplete).
@@ -60,8 +66,8 @@ export async function determineAction(text: string, emoji?: string, todos?: Todo
         The add requests will mostly likey to be in the future tense, while the complete requests will be in the past tense.
         The emojis sent by the user should be prioritized and not changed unless they don't match the todo's intent.
         The todo list is very important to understand the user's intent.
-        Example: "todo: 'buy groceries', user request: 'bought groceries', action: 'complete', text: 'buy groceries'"
-        Example: "todo: 'make a post with @theo', user request: 'i made a post with @theo', action: 'complete', text: 'make a post with @theo'"
+        Example: "todo: 'buy groceries', user request: 'bought groceries', action: 'mark', text: 'buy groceries', status: 'complete'"
+        Example: "todo: 'make a post with @theo', user request: 'i made a post with @theo', action: 'mark', text: 'make a post with @theo', status: 'complete'"
         Example: "request: 'buy groceries', action: 'add', text: 'buy groceries', emoji: '🛒'"
 
         The edit request will mostly be ambiguous, so make the edit as close to the original as possible to maintain the user's context with the todo to edit.

@@ -173,14 +173,25 @@ export default function Todo() {
             }
             break;
 
-          case "complete":
-            const todoToComplete = todos.find(
+          case "mark":
+            const todoToMark = todos.find(
               todo => todo.text.toLowerCase().includes(action.text?.toLowerCase() || "")
             );
-            if (todoToComplete) {
-              newTodos = newTodos.map(todo =>
-                todo.id === todoToComplete.id ? { ...todo, completed: !todo.completed } : todo
-              )
+            if (todoToMark) {
+              newTodos = newTodos.map(todo => {
+                if (todo.id === todoToMark.id) {
+                  // If status is provided, set to that specific status
+                  if (action.status === "complete") {
+                    return { ...todo, completed: true };
+                  } else if (action.status === "incomplete") {
+                    return { ...todo, completed: false };
+                  } else {
+                    // If no status provided, toggle the current status
+                    return { ...todo, completed: !todo.completed };
+                  }
+                }
+                return todo;
+              });
             }
             break;
 
