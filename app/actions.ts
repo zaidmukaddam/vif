@@ -5,7 +5,6 @@ import { z } from "zod";
 import { vif } from "@/lib/models";
 import { transcribe } from "orate";
 import { ElevenLabs } from 'orate/elevenlabs';
-import { X } from "lucide-react";
 
 interface TodoItem {
     id: string;
