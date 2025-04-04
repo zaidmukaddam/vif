@@ -10,7 +10,7 @@ export function InputLoadingIndicator({ showText = false }: { showText?: boolean
       </div>
       {showText && (
         <span className="text-xs font-medium text-muted-foreground">
-          <span className="inline-block animate-pulse">Vif{" "}</span>
+          <span className="inline-block animate-pulse mr-1">Vif</span>
           <span className="inline-block"> is thinking...</span>
         </span>
       )}
