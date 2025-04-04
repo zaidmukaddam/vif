@@ -3,7 +3,7 @@ import { MagicWand, Sparkle } from "@phosphor-icons/react";
 
 export function LoadingState() {
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 px-2">
       <div className="flex items-center px-4 py-3 gap-3 mb-3 bg-muted/50 rounded-md">
         <div className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center relative">
           <MagicWand className="w-5 h-5 text-muted-foreground" weight="light" />
