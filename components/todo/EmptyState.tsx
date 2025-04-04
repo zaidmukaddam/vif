@@ -14,7 +14,7 @@ export function EmptyState({ selectedDate, focusInput }: EmptyStateProps) {
         <div className="w-16 h-16 rounded-full bg-muted border border-border flex items-center justify-center">
           <NotePencil className="w-8 h-8 text-muted-foreground" weight="light" />
         </div>
-        <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center">
+        <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center">
           <Sparkle className="w-4 h-4 text-muted-foreground" weight="light" />
         </div>
       </div>

@@ -167,21 +167,15 @@ export default function Todo() {
             break;
 
           case "delete":
-            const todoToDelete = todos.find(
-              todo => todo.text.toLowerCase().includes(action.text?.toLowerCase() || "")
-            );
-            if (todoToDelete) {
-              newTodos = newTodos.filter(todo => todo.id !== todoToDelete.id);
+            if (action.todoId) {
+              newTodos = newTodos.filter(todo => todo.id !== action.todoId);
             }
             break;
 
           case "mark":
-            const todoToMark = todos.find(
-              todo => todo.text.toLowerCase().includes(action.text?.toLowerCase() || "")
-            );
-            if (todoToMark) {
+            if (action.todoId) {
               newTodos = newTodos.map(todo => {
-                if (todo.id === todoToMark.id) {
+                if (todo.id === action.todoId) {
                   // If status is provided, set to that specific status
                   if (action.status === "complete") {
                     return { ...todo, completed: true };
@@ -204,26 +198,20 @@ export default function Todo() {
             break;
 
           case "edit":
-            if (action.targetText && action.text) {
-              const todoToEdit = todos.find(
-                todo => todo.text.toLowerCase().includes(action.targetText?.toLowerCase() || "")
-              );
+            if (action.todoId && action.text) {
               console.log("AI editing todo:", {
-                targetText: action.targetText,
-                newText: action.text,
-                foundTodo: todoToEdit
+                todoId: action.todoId,
+                newText: action.text
               });
 
-              if (todoToEdit) {
-                newTodos = newTodos.map(todo => {
-                  if (todo.id === todoToEdit.id) {
-                    const updatedTodo = serializeTodo({ ...todo, text: action.text || "" });
-                    console.log("AI updated todo:", updatedTodo);
-                    return updatedTodo;
-                  }
-                  return todo;
-                })
-              }
+              newTodos = newTodos.map(todo => {
+                if (todo.id === action.todoId) {
+                  const updatedTodo = serializeTodo({ ...todo, text: action.text || "" });
+                  console.log("AI updated todo:", updatedTodo);
+                  return updatedTodo;
+                }
+                return todo;
+              });
             }
             break;
 
