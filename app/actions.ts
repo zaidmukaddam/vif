@@ -60,6 +60,14 @@ ${todos?.map(todo => `- ${todo.id}: ${todo.text} (${todo.emoji} ${todo.completed
         "todo id: '789ghi', original text: 'meeting w/ John', user request: 'i meant meet Jane', action: 'edit', todoId: '789ghi', text: 'meeting w/ Jane'"
         "todo id: '012jkl', original text: 'buy groceries', user request: 'i meant buy flowers', action: 'edit', todoId: '012jkl', text: 'buy flowers'"
         "todo id: '345mno', original text: 'go for violin lesson', user request: 'i meant go for a walk', action: 'edit', todoId: '345mno', text: 'go for a walk'"
+
+        Example clear requests:
+        "user request: 'clear all todos', action: 'clear', listToClear: 'all'"
+        "user request: 'clear my completed tasks', action: 'clear', listToClear: 'completed'"
+        "user request: 'remove all incomplete items', action: 'clear', listToClear: 'incomplete'"
+        "user request: 'start fresh', action: 'clear', listToClear: 'all'"
+        "user request: 'delete finished tasks', action: 'clear', listToClear: 'completed'"
+        "user request: 'clean up my list', action: 'clear', listToClear: 'all'"
     `;
 
     console.log("prompt", prompt);

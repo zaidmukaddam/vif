@@ -102,6 +102,7 @@ export default function Todo() {
   const [editEmoji, setEditEmoji] = useState("");
   const [showFaqDialog, setShowFaqDialog] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const micPermission = useMicrophonePermission();
@@ -133,6 +134,40 @@ export default function Todo() {
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
+  // Add effect to detect standalone PWA mode
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Check if the app is running in standalone mode (PWA)
+      const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches 
+        || (window.navigator as any).standalone 
+        || document.referrer.includes('android-app://');
+      
+      setIsStandalone(isInStandaloneMode);
+      
+      // Listen for changes in display mode
+      const mediaQueryList = window.matchMedia('(display-mode: standalone)');
+      const handleChange = (e: MediaQueryListEvent) => {
+        setIsStandalone(e.matches || (window.navigator as any).standalone || false);
+      };
+      
+      // Modern browsers use addEventListener, older ones use addListener
+      if (mediaQueryList.addEventListener) {
+        mediaQueryList.addEventListener('change', handleChange);
+      } else if (mediaQueryList.addListener) {
+        // For Safari < 14
+        mediaQueryList.addListener(handleChange);
+      }
+      
+      return () => {
+        if (mediaQueryList.removeEventListener) {
+          mediaQueryList.removeEventListener('change', handleChange);
+        } else if (mediaQueryList.removeListener) {
+          mediaQueryList.removeListener(handleChange);
+        }
+      };
+    }
+  }, []);
+
   // Only process todos after client-side hydration
   const filteredTodos = isClientLoaded ? filterTodosByDate(todos, selectedDate) : [];
   const sortedTodos = isClientLoaded ? sortTodos(filteredTodos, sortBy) : [];
@@ -149,6 +184,7 @@ export default function Todo() {
     setNewTodo("");
 
     let newTodos = [...todos];
+    let clearActionExecuted = false;
 
     try {
       const actions = (await determineAction(text, selectedEmoji || "", filteredTodos, selectedModel)).actions;
@@ -216,25 +252,26 @@ export default function Todo() {
             break;
 
           case "clear":
+            clearActionExecuted = true;
             if (action.listToClear) {
               switch (action.listToClear) {
                 case "all":
                   // Clear all todos for the selected date
-                  setTodos(todos.filter(todo =>
+                  newTodos = todos.filter(todo =>
                     format(todo.date, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd")
-                  ));
+                  );
                   break;
                 case "completed":
                   // Clear completed todos for the selected date
-                  setTodos(todos.filter(todo =>
+                  newTodos = todos.filter(todo =>
                     !(todo.completed && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
-                  ));
+                  );
                   break;
                 case "incomplete":
                   // Clear incomplete todos for the selected date
-                  setTodos(todos.filter(todo =>
+                  newTodos = todos.filter(todo =>
                     !((!todo.completed) && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
-                  ));
+                  );
                   break;
               }
             }
@@ -415,7 +452,10 @@ export default function Todo() {
         </Suspense>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t">
+      <div className={cn(
+        "fixed bottom-0 left-0 right-0 p-4 bg-background border-t",
+        isStandalone && "pb-8"
+      )}>
         <div className="max-w-md mx-auto flex items-center space-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="!outline-0 !ring-0 focus:!outline-0 focus:!ring-0">
