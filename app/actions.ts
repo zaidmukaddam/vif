@@ -2,7 +2,7 @@
 
 import { generateObject } from "ai";
 import { z } from "zod";
-import { groq } from "@ai-sdk/groq";
+import { vif } from "@/lib/models";
 import { transcribe } from "orate";
 import { ElevenLabs } from 'orate/elevenlabs';
 
@@ -14,12 +14,12 @@ interface TodoItem {
     date: Date;
 }
 
-export async function determineAction(text: string, emoji?: string, todos?: TodoItem[], model: string = "llama-3.3-70b-versatile") {
+export async function determineAction(text: string, emoji?: string, todos?: TodoItem[], model: string = "vif-llama") {
     console.log("Determining action...");
     console.log(text, emoji, todos);
     const startTime = Date.now();
     const { object: action } = await generateObject({
-        model: groq(model),
+        model: vif.languageModel(model),
         temperature: 0,
         providerOptions: {
             groq: {

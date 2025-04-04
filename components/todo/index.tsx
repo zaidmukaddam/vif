@@ -18,7 +18,7 @@ import {
   X,
   Robot
 } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -85,6 +85,7 @@ import { InputLoadingIndicator } from "./InputLoadingIndicator";
 import { MicButton } from "./MicButton";
 import { FaqContent } from "./FaqContent";
 import { EmptyState } from "./EmptyState";
+import { LoadingState } from "./LoadingState";
 import { ThemeToggleButton } from "@/components/theme-toggle";
 
 export default function Todo() {
@@ -94,7 +95,7 @@ export default function Todo() {
   const [newTodo, setNewTodo] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedEmoji, setSelectedEmoji] = useState<string>("😊");
-  const [selectedModel, setSelectedModel] = useLocalStorage<Model>("selectedModel", "llama-3.3-70b-versatile");
+  const [selectedModel, setSelectedModel] = useLocalStorage<Model>("selectedModel", "vif-llama");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [editingTodoId, setEditingTodoId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -401,6 +402,8 @@ export default function Todo() {
         <Suspense fallback={<TodoSkeleton />}>
           {!isClientLoaded ? (
             <TodoSkeleton />
+          ) : sortedTodos.length === 0 && isLoading ? (
+            <LoadingState />
           ) : sortedTodos.length === 0 && !isLoading ? (
             <EmptyState
               selectedDate={selectedDate}
@@ -547,54 +550,67 @@ export default function Todo() {
                 AI Model
               </div>
               <DropdownMenuItem
-                onClick={() => setSelectedModel("llama-3.3-70b-versatile")}
+                onClick={() => setSelectedModel("vif-llama")}
                 className={cn(
                   "rounded-lg cursor-pointer flex items-center",
-                  selectedModel === "llama-3.3-70b-versatile" && "bg-muted"
+                  selectedModel === "vif-llama" && "bg-muted"
                 )}
               >
                 <Robot className="w-4 h-4 mr-2" />
                 <span>Llama 3.3 70B</span>
-                {selectedModel === "llama-3.3-70b-versatile" && (
+                {selectedModel === "vif-llama" && (
                   <Check className="w-4 h-4 ml-auto" />
                 )}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => setSelectedModel("qwen-qwq-32b")}
+                onClick={() => setSelectedModel("vif-qwq")}
                 className={cn(
                   "rounded-lg cursor-pointer flex items-center",
-                  selectedModel === "qwen-qwq-32b" && "bg-muted"
+                  selectedModel === "vif-qwq" && "bg-muted"
                 )}
               >
                 <Robot className="w-4 h-4 mr-2" />
                 <span>Qwen QWQ 32B</span>
-                {selectedModel === "qwen-qwq-32b" && (
+                {selectedModel === "vif-qwq" && (
                   <Check className="w-4 h-4 ml-auto" />
                 )}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => setSelectedModel("qwen-2.5-32b")}
+                onClick={() => setSelectedModel("vif-qwen")}
                 className={cn(
                   "rounded-lg cursor-pointer flex items-center",
-                  selectedModel === "qwen-2.5-32b" && "bg-muted"
+                  selectedModel === "vif-qwen" && "bg-muted"
                 )}
               >
                 <Robot className="w-4 h-4 mr-2" />
                 <span>Qwen 2.5 32B</span>
-                {selectedModel === "qwen-2.5-32b" && (
+                {selectedModel === "vif-qwen" && (
                   <Check className="w-4 h-4 ml-auto" />
                 )}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => setSelectedModel("deepseek-r1-distill-llama-70b")}
+                onClick={() => setSelectedModel("vif-r1")}
                 className={cn(
                   "rounded-lg cursor-pointer flex items-center",
-                  selectedModel === "deepseek-r1-distill-llama-70b" && "bg-muted"
+                  selectedModel === "vif-r1" && "bg-muted"
                 )}
               >
                 <Robot className="w-4 h-4 mr-2" />
                 <span>DeepSeek R1 70B</span>
-                {selectedModel === "deepseek-r1-distill-llama-70b" && (
+                {selectedModel === "vif-r1" && (
+                  <Check className="w-4 h-4 ml-auto" />
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setSelectedModel("vif-quasar-alpha")}
+                className={cn(
+                  "rounded-lg cursor-pointer flex items-center",
+                  selectedModel === "vif-quasar-alpha" && "bg-muted"
+                )}
+              >
+                <Robot className="w-4 h-4 mr-2" />
+                <span>Quasar Alpha</span>
+                {selectedModel === "vif-quasar-alpha" && (
                   <Check className="w-4 h-4 ml-auto" />
                 )}
               </DropdownMenuItem>
@@ -655,7 +671,7 @@ export default function Todo() {
               disabled={isLoading || isProcessingSpeech}
             />
 
-            {isLoading && <InputLoadingIndicator />}
+            {isLoading && <InputLoadingIndicator showText={true} />}
             {isProcessingSpeech && <InputLoadingIndicator />}
 
             <MicButton

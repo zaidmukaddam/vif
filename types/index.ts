@@ -45,4 +45,4 @@ export interface CircleCheckboxProps {
   className?: string;
 } 
 
-export type Model = "llama-3.3-70b-versatile" | "qwen-qwq-32b" | "qwen-2.5-32b" | "deepseek-r1-distill-llama-70b";
+export type Model = "vif-llama" | "vif-qwq" | "vif-qwen" | "vif-r1" | "vif-quasar-alpha";
