@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import { Microphone, MicrophoneSlash, Warning } from "@phosphor-icons/react";
+import { Microphone, MicrophoneSlash, Warning, ArrowUp } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 import { MicButtonProps } from "@/types";
 
 export function MicButton({
@@ -9,7 +9,9 @@ export function MicButton({
   isProcessingSpeech,
   micPermission,
   startRecording,
-  stopRecording
+  stopRecording,
+  hasText,
+  onSend
 }: MicButtonProps) {
   // If checking permissions
   if (micPermission === "checking") {
@@ -24,24 +26,9 @@ export function MicButton({
       </Button>
     );
   }
-  
-  // If recording is in progress
-  if (isRecording) {
-    return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-9 w-9 shrink-0 rounded-none hover:bg-muted-foreground/10"
-        onClick={stopRecording}
-        disabled={isProcessingSpeech}
-      >
-        <MicrophoneSlash className="w-5 h-5 text-red-500 animate-pulse" weight="fill" />
-      </Button>
-    );
-  }
-  
-  // If permission is denied
-  if (micPermission === "denied") {
+
+  // If permission is denied and no text
+  if (micPermission === "denied" && !hasText) {
     return (
       <Button
         variant="ghost"
@@ -59,7 +46,37 @@ export function MicButton({
       </Button>
     );
   }
-  
+
+  // If there's text, show send button
+  if (hasText) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9 shrink-0 rounded-none hover:bg-muted-foreground/10"
+        onClick={onSend}
+        disabled={isProcessingSpeech}
+      >
+        <ArrowUp className="w-5 h-5 text-foreground" weight="bold" />
+      </Button>
+    );
+  }
+
+  // If recording is in progress
+  if (isRecording) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9 shrink-0 rounded-none hover:bg-muted-foreground/10"
+        onClick={stopRecording}
+        disabled={isProcessingSpeech}
+      >
+        <MicrophoneSlash className="w-5 h-5 text-red-500 animate-pulse" weight="fill" />
+      </Button>
+    );
+  }
+
   // Default microphone button (prompt or granted)
   return (
     <Button

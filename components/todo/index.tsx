@@ -16,9 +16,12 @@ import {
   ArrowDown,
   Check,
   X,
-  Robot
+  Robot,
+  Icon,
+  CheckSquare,
+  Square
 } from "@phosphor-icons/react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -88,6 +91,59 @@ import { EmptyState } from "./EmptyState";
 import { LoadingState } from "./LoadingState";
 import { ThemeToggleButton } from "@/components/theme-toggle";
 
+// Add these interfaces before the main component
+interface MenuItemProps {
+  icon: React.ElementType;
+  label: string;
+  onClick?: () => void;
+  selected?: boolean;
+  variant?: "default" | "danger";
+  endIcon?: React.ReactNode;
+}
+
+interface MenuSectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+// Add these components before the main component
+const MenuItem = ({ icon: Icon, label, onClick, selected, variant = "default", endIcon }: MenuItemProps) => (
+  <DropdownMenuItem
+    onClick={onClick}
+    className={cn(
+      "rounded-lg cursor-pointer flex items-center group",
+      selected && "bg-muted",
+      variant === "danger" && "text-red-600 focus:text-red-600 focus:bg-red-100 dark:hover:bg-red-900/50 dark:hover:text-red-400 hover:text-red-600"
+    )}
+  >
+    <Icon 
+      className={cn(
+        "w-4 h-4 mr-2",
+        variant === "danger" && "group-hover:text-red-600 dark:group-hover:text-red-400"
+      )} 
+    />
+    <span>{label}</span>
+    {endIcon && (
+      <span className={cn(
+        "ml-auto",
+        typeof selected === 'boolean' && !selected && "text-muted-foreground/50",
+        variant === "danger" && "group-hover:text-red-600 dark:group-hover:text-red-400"
+      )}>
+        {endIcon}
+      </span>
+    )}
+  </DropdownMenuItem>
+);
+
+const MenuSection = ({ title, children }: MenuSectionProps) => (
+  <div className="space-y-0.5">
+    <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
+      {title}
+    </div>
+    {children}
+  </div>
+);
+
 export default function Todo() {
   const [isLoading, setIsLoading] = useState(false);
   const [isClientLoaded, setIsClientLoaded] = useState(false);
@@ -103,6 +159,7 @@ export default function Todo() {
   const [showFaqDialog, setShowFaqDialog] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const micPermission = useMicrophonePermission();
@@ -112,6 +169,16 @@ export default function Todo() {
     startRecording,
     stopRecording
   } = useSpeechRecognition();
+
+  const modelOptions: { id: Model; name: string }[] = [
+    { id: "vif-llama-4", name: "Llama 4 Scout" },
+    { id: "vif-llama", name: "Llama 3.3 70B" },
+    { id: "vif-claude", name: "Claude 3.7 Sonnet" },
+    { id: "vif-qwq", name: "Qwen QWQ 32B" },
+    { id: "vif-qwen", name: "Qwen 2.5 32B" },
+    { id: "vif-r1", name: "DeepSeek R1 70B" },
+    { id: "vif-quasar-alpha", name: "Quasar Alpha" },
+  ];
 
   // Add effect to indicate client-side hydration is complete
   useEffect(() => {
@@ -187,17 +254,22 @@ export default function Todo() {
     let clearActionExecuted = false;
 
     try {
-      const actions = (await determineAction(text, selectedEmoji || "", filteredTodos, selectedModel)).actions;
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const actions = (await determineAction(text, selectedEmoji || "", filteredTodos, selectedModel, timezone)).actions;
       actions.forEach((action) => {
         switch (action.action) {
           case "add":
+            let todoDate = selectedDate;
+            if (action.targetDate) {
+              todoDate = new Date(action.targetDate);
+            }
             newTodos.push(
               serializeTodo({
                 id: Math.random().toString(36).substring(7),
                 text: action.text || text,
                 completed: false,
                 emoji: action.emoji || selectedEmoji,
-                date: selectedDate,
+                date: todoDate,
               })
             )
             break;
@@ -237,12 +309,19 @@ export default function Todo() {
             if (action.todoId && action.text) {
               console.log("AI editing todo:", {
                 todoId: action.todoId,
-                newText: action.text
+                newText: action.text,
+                newDate: action.targetDate,
+                newEmoji: action.emoji
               });
-
+              
               newTodos = newTodos.map(todo => {
                 if (todo.id === action.todoId) {
-                  const updatedTodo = serializeTodo({ ...todo, text: action.text || "" });
+                  const updatedTodo = serializeTodo({
+                    ...todo,
+                    text: action.text || todo.text,
+                    emoji: action.emoji || todo.emoji,
+                    date: action.targetDate ? new Date(action.targetDate) : todo.date,
+                  });
                   console.log("AI updated todo:", updatedTodo);
                   return updatedTodo;
                 }
@@ -453,8 +532,9 @@ export default function Todo() {
       </div>
 
       <div className={cn(
-        "fixed bottom-0 left-0 right-0 p-4 bg-background border-t",
-        isStandalone && "pb-8"
+        "fixed bottom-0 left-0 right-0 p-4 bg-background border-t transition-all duration-200 ease-in-out",
+        isStandalone && "pb-8",
+        isInputFocused && "pb-4"
       )}>
         <div className="max-w-md mx-auto flex items-center space-x-2">
           <DropdownMenu>
@@ -472,176 +552,82 @@ export default function Todo() {
               align="start"
               sideOffset={8}
             >
-              <div className="space-y-0.5">
-                <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-                  Sort by
-                </div>
-                <DropdownMenuItem
+              <MenuSection title="Sort by">
+                <MenuItem
+                  icon={Clock}
+                  label="Newest First"
                   onClick={() => setSortBy("newest")}
-                  className={cn(
-                    "rounded-lg cursor-pointer flex items-center",
-                    sortBy === "newest" && "bg-muted"
-                  )}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  <span>Newest First</span>
-                  <ArrowUp className={cn(
-                    "w-4 h-4 ml-auto",
-                    sortBy === "newest" ? "text-foreground" : "text-muted-foreground/50"
-                  )} />
-                </DropdownMenuItem>
-                <DropdownMenuItem
+                  selected={sortBy === "newest"}
+                  endIcon={<ArrowUp />}
+                />
+                <MenuItem
+                  icon={Clock}
+                  label="Oldest First"
                   onClick={() => setSortBy("oldest")}
-                  className={cn(
-                    "rounded-lg cursor-pointer flex items-center",
-                    sortBy === "oldest" && "bg-muted"
-                  )}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  <span>Oldest First</span>
-                  <ArrowDown className={cn(
-                    "w-4 h-4 ml-auto",
-                    sortBy === "oldest" ? "text-foreground" : "text-muted-foreground/50"
-                  )} />
-                </DropdownMenuItem>
-                <DropdownMenuItem
+                  selected={sortBy === "oldest"}
+                  endIcon={<ArrowDown />}
+                />
+                <MenuItem
+                  icon={TextAa}
+                  label="Alphabetically"
                   onClick={() => setSortBy("alphabetical")}
-                  className={cn(
-                    "rounded-lg cursor-pointer flex items-center",
-                    sortBy === "alphabetical" && "bg-muted"
-                  )}
-                >
-                  <TextAa className="w-4 h-4 mr-2" />
-                  <span>Alphabetically</span>
-                  {sortBy === "alphabetical" && (
-                    <Check className="w-4 h-4 ml-auto" />
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem
+                  selected={sortBy === "alphabetical"}
+                  endIcon={sortBy === "alphabetical" ? <Check /> : undefined}
+                />
+                <MenuItem
+                  icon={CheckCircle}
+                  label="Completion Status"
                   onClick={() => setSortBy("completed")}
-                  className={cn(
-                    "rounded-lg cursor-pointer flex items-center",
-                    sortBy === "completed" && "bg-muted"
-                  )}
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  <span>Completion Status</span>
-                  {sortBy === "completed" && (
-                    <Check className="w-4 h-4 ml-auto" />
-                  )}
-                </DropdownMenuItem>
-              </div>
+                  selected={sortBy === "completed"}
+                  endIcon={sortBy === "completed" ? <Check /> : undefined}
+                />
+              </MenuSection>
 
               <DropdownMenuSeparator className="my-1.5" />
 
-              <div className="space-y-0.5">
-                <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-                  Actions
-                </div>
-                <DropdownMenuItem
+              <MenuSection title="Actions">
+                <MenuItem
+                  icon={Trash}
+                  label="Clear All"
                   onClick={() => clearAllTodos()}
-                  className="rounded-lg cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-100 dark:hover:bg-red-900/50 dark:hover:text-red-400"
-                >
-                  <Trash className="w-4 h-4 mr-2" />
-                  <span>Clear All</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
+                  variant="danger"
+                />
+                <MenuItem
+                  icon={CheckSquare}
+                  label="Clear Completed"
                   onClick={() => clearCompletedTodos()}
-                  className="rounded-lg cursor-pointer"
-                >
-                  <Broom className="w-4 h-4 mr-2" />
-                  <span>Clear Completed</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
+                  endIcon={<Check className="w-3.5 h-3.5 opacity-50" />}
+                />
+                <MenuItem
+                  icon={Square}
+                  label="Clear Incomplete"
                   onClick={() => clearIncompleteTodos()}
-                  className="rounded-lg cursor-pointer"
-                >
-                  <Broom className="w-4 h-4 mr-2" />
-                  <span>Clear Incomplete</span>
-                </DropdownMenuItem>
-              </div>
+                  endIcon={<X className="w-3.5 h-3.5 opacity-50" />}
+                />
+              </MenuSection>
 
               <DropdownMenuSeparator className="my-1.5" />
 
-              {/* Appearance Section (Light/Dark Mode) */}
-              <div className="space-y-0.5">
-                <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-                  Appearance
-                </div>
+              <MenuSection title="Appearance">
                 <div className="px-2 py-1.5 flex justify-start">
                   <ThemeToggleButton />
                 </div>
-              </div>
+              </MenuSection>
 
               <DropdownMenuSeparator className="my-1.5" />
-              <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-                AI Model
-              </div>
-              <DropdownMenuItem
-                onClick={() => setSelectedModel("vif-llama")}
-                className={cn(
-                  "rounded-lg cursor-pointer flex items-center",
-                  selectedModel === "vif-llama" && "bg-muted"
-                )}
-              >
-                <Robot className="w-4 h-4 mr-2" />
-                <span>Llama 3.3 70B</span>
-                {selectedModel === "vif-llama" && (
-                  <Check className="w-4 h-4 ml-auto" />
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSelectedModel("vif-qwq")}
-                className={cn(
-                  "rounded-lg cursor-pointer flex items-center",
-                  selectedModel === "vif-qwq" && "bg-muted"
-                )}
-              >
-                <Robot className="w-4 h-4 mr-2" />
-                <span>Qwen QWQ 32B</span>
-                {selectedModel === "vif-qwq" && (
-                  <Check className="w-4 h-4 ml-auto" />
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSelectedModel("vif-qwen")}
-                className={cn(
-                  "rounded-lg cursor-pointer flex items-center",
-                  selectedModel === "vif-qwen" && "bg-muted"
-                )}
-              >
-                <Robot className="w-4 h-4 mr-2" />
-                <span>Qwen 2.5 32B</span>
-                {selectedModel === "vif-qwen" && (
-                  <Check className="w-4 h-4 ml-auto" />
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSelectedModel("vif-r1")}
-                className={cn(
-                  "rounded-lg cursor-pointer flex items-center",
-                  selectedModel === "vif-r1" && "bg-muted"
-                )}
-              >
-                <Robot className="w-4 h-4 mr-2" />
-                <span>DeepSeek R1 70B</span>
-                {selectedModel === "vif-r1" && (
-                  <Check className="w-4 h-4 ml-auto" />
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSelectedModel("vif-quasar-alpha")}
-                className={cn(
-                  "rounded-lg cursor-pointer flex items-center",
-                  selectedModel === "vif-quasar-alpha" && "bg-muted"
-                )}
-              >
-                <Robot className="w-4 h-4 mr-2" />
-                <span>Quasar Alpha</span>
-                {selectedModel === "vif-quasar-alpha" && (
-                  <Check className="w-4 h-4 ml-auto" />
-                )}
-              </DropdownMenuItem>
+
+              <MenuSection title="AI Model">
+                {modelOptions.map((model) => (
+                  <MenuItem
+                    key={model.id}
+                    icon={Robot}
+                    label={model.name}
+                    onClick={() => setSelectedModel(model.id)}
+                    selected={selectedModel === model.id}
+                    endIcon={selectedModel === model.id ? <Check /> : undefined}
+                  />
+                ))}
+              </MenuSection>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -692,6 +678,8 @@ export default function Todo() {
               onChange={(e) => setNewTodo(e.target.value)}
               onKeyUp={handleInputKeyUp}
               onKeyDown={handleInputKeyUp}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
               className={cn(
                 "flex-1 border-0 !bg-transparent focus:!outline-none focus:!ring-0 focus-visible:!ring-0 focus-visible:!ring-offset-0 h-9 rounded-none shadow-none px-2",
                 isLoading && "text-muted-foreground"
@@ -708,6 +696,8 @@ export default function Todo() {
               micPermission={micPermission}
               startRecording={startRecording}
               stopRecording={handleSpeechResult}
+              hasText={!!newTodo.trim()}
+              onSend={() => handleAction(newTodo)}
             />
           </div>
 

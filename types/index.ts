@@ -37,6 +37,8 @@ export interface MicButtonProps {
   micPermission: "checking" | "granted" | "denied" | "prompt";
   startRecording: () => void;
   stopRecording: () => void;
+  hasText: boolean;
+  onSend: () => void;
 }
 
 export interface CircleCheckboxProps {
@@ -45,4 +47,4 @@ export interface CircleCheckboxProps {
   className?: string;
 } 
 
-export type Model = "vif-llama" | "vif-qwq" | "vif-qwen" | "vif-r1" | "vif-quasar-alpha";
+export type Model = "vif-llama-4" | "vif-llama" | "vif-claude" | "vif-qwq" | "vif-qwen" | "vif-r1" | "vif-quasar-alpha";
