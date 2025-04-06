@@ -4,7 +4,7 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { vif } from "@/lib/models";
 import { transcribe } from "orate";
-import { ElevenLabs } from 'orate/elevenlabs';
+import { Groq } from 'orate/groq';
 import { DetermineActionFn } from "@/types/actions";
 
 export const determineAction: DetermineActionFn = async (text, emoji, todos, model = "vif-llama", timezone = "UTC") => {
@@ -143,7 +143,7 @@ export async function convertSpeechToText(audioFile: any) {
     });
 
     const text = await transcribe({
-        model: new ElevenLabs().stt(),
+        model: new Groq().stt("whisper-large-v3-turbo"),
         audio: audioFile,
     });
 
