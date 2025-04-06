@@ -6,20 +6,10 @@ import {
   List,
   DotsThree,
   CaretDown,
-  Clock,
-  TextAa,
-  CheckCircle,
-  Trash,
-  Broom,
   Smiley,
-  ArrowUp,
-  ArrowDown,
   Check,
   X,
   Robot,
-  Icon,
-  CheckSquare,
-  Square,
   Question
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -173,7 +163,7 @@ export default function Todo() {
 
   const modelOptions: { id: Model; name: string }[] = [
     { id: "vif-llama-4-scout", name: "Llama 4 Scout" },
-    { id: "vif-llama-4-maverick", name: "Llama Maverick" },
+    { id: "vif-llama-4-maverick", name: "Llama 4 Maverick" },
     { id: "vif-llama", name: "Llama 3.3 70B" },
     { id: "vif-claude", name: "Claude 3.7 Sonnet" },
     { id: "vif-qwq", name: "Qwen QWQ 32B" },
