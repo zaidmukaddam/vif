@@ -47,4 +47,4 @@ export interface CircleCheckboxProps {
   className?: string;
 } 
 
-export type Model = "vif-llama-4" | "vif-llama" | "vif-claude" | "vif-qwq" | "vif-qwen" | "vif-r1" | "vif-quasar-alpha";
+export type Model = "vif-llama-4-scout" |"vif-llama-4-maverick" | "vif-llama" | "vif-claude" | "vif-qwq" | "vif-qwen" | "vif-r1" | "vif-quasar-alpha";

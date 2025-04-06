@@ -23,6 +23,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^1.3.6
         version: 1.3.6(zod@3.24.2)
+      '@ai-sdk/togetherai':
+        specifier: ^0.2.6
+        version: 0.2.6(zod@3.24.2)
       '@openrouter/ai-sdk-provider':
         specifier: ^0.4.5
         version: 0.4.5(zod@3.24.2)
@@ -165,6 +168,12 @@ packages:
     peerDependencies:
       zod: ^3.0.0
 
+  '@ai-sdk/openai-compatible@0.2.6':
+    resolution: {integrity: sha512-UOPEWIqG3l5K9O+p7gqiCOWzx66JtmG9v9Mab+S4E7WE34EN6u1QS1pX+RDlRDhZ0/8gNJif0r4Xlc+Ti03yNA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+
   '@ai-sdk/openai@1.3.6':
     resolution: {integrity: sha512-Lyp6W6dg+ERMJru3DI8/pWAjXLB0GbMMlXh4jxA3mVny8CJHlCAjlEJRuAdLg1/CFz4J1UDN2/4qBnIWtLFIqw==}
     engines: {node: '>=18'}
@@ -209,6 +218,12 @@ packages:
     peerDependenciesMeta:
       zod:
         optional: true
+
+  '@ai-sdk/togetherai@0.2.6':
+    resolution: {integrity: sha512-AV3CABMKlIniCe5owr6H/kSirfk3Y/MeBAetrNJxRDhmrxa5VXzbWeMxS5xeS8crqFXWJPPLcwPiwOuFtpQMrA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
 
   '@ai-sdk/ui-utils@1.2.4':
     resolution: {integrity: sha512-wLTxEZrKZRyBmlVZv8nGXgLBg5tASlqXwbuhoDu0MhZa467ZFREEnosH/OC/novyEHTQXko2zC606xoVbMrUcA==}
@@ -2593,6 +2608,12 @@ snapshots:
       '@ai-sdk/provider-utils': 2.2.3(zod@3.24.2)
       zod: 3.24.2
 
+  '@ai-sdk/openai-compatible@0.2.6(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.0
+      '@ai-sdk/provider-utils': 2.2.4(zod@3.24.2)
+      zod: 3.24.2
+
   '@ai-sdk/openai@1.3.6(zod@3.24.2)':
     dependencies:
       '@ai-sdk/provider': 1.1.0
@@ -2638,6 +2659,13 @@ snapshots:
       swr: 2.3.3(react@19.1.0)
       throttleit: 2.1.0
     optionalDependencies:
+      zod: 3.24.2
+
+  '@ai-sdk/togetherai@0.2.6(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/openai-compatible': 0.2.6(zod@3.24.2)
+      '@ai-sdk/provider': 1.1.0
+      '@ai-sdk/provider-utils': 2.2.4(zod@3.24.2)
       zod: 3.24.2
 
   '@ai-sdk/ui-utils@1.2.4(zod@3.24.2)':

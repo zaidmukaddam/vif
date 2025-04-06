@@ -19,7 +19,8 @@ import {
   Robot,
   Icon,
   CheckSquare,
-  Square
+  Square,
+  Question
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,18 +112,18 @@ const MenuItem = ({ icon: Icon, label, onClick, selected, variant = "default", e
   <DropdownMenuItem
     onClick={onClick}
     className={cn(
-      "rounded-lg cursor-pointer flex items-center group",
+      "rounded-lg cursor-pointer flex items-center group h-8 px-2",
       selected && "bg-muted",
       variant === "danger" && "text-red-600 focus:text-red-600 focus:bg-red-100 dark:hover:bg-red-900/50 dark:hover:text-red-400 hover:text-red-600"
     )}
   >
     <Icon 
       className={cn(
-        "w-4 h-4 mr-2",
+        "w-3.5 h-3.5 mr-2",
         variant === "danger" && "group-hover:text-red-600 dark:group-hover:text-red-400"
       )} 
     />
-    <span>{label}</span>
+    <span className="text-sm">{label}</span>
     {endIcon && (
       <span className={cn(
         "ml-auto",
@@ -137,7 +138,7 @@ const MenuItem = ({ icon: Icon, label, onClick, selected, variant = "default", e
 
 const MenuSection = ({ title, children }: MenuSectionProps) => (
   <div className="space-y-0.5">
-    <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
+    <div className="px-2 py-1 text-xs font-medium text-muted-foreground/70">
       {title}
     </div>
     {children}
@@ -171,7 +172,8 @@ export default function Todo() {
   } = useSpeechRecognition();
 
   const modelOptions: { id: Model; name: string }[] = [
-    { id: "vif-llama-4", name: "Llama 4 Scout" },
+    { id: "vif-llama-4-scout", name: "Llama 4 Scout" },
+    { id: "vif-llama-4-maverick", name: "Llama Maverick" },
     { id: "vif-llama", name: "Llama 3.3 70B" },
     { id: "vif-claude", name: "Claude 3.7 Sonnet" },
     { id: "vif-qwq", name: "Qwen QWQ 32B" },
@@ -548,73 +550,17 @@ export default function Todo() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-56 rounded-xl p-1"
+              className="w-52 rounded-xl p-1"
               align="start"
               sideOffset={8}
             >
-              <MenuSection title="Sort by">
-                <MenuItem
-                  icon={Clock}
-                  label="Newest First"
-                  onClick={() => setSortBy("newest")}
-                  selected={sortBy === "newest"}
-                  endIcon={<ArrowUp />}
-                />
-                <MenuItem
-                  icon={Clock}
-                  label="Oldest First"
-                  onClick={() => setSortBy("oldest")}
-                  selected={sortBy === "oldest"}
-                  endIcon={<ArrowDown />}
-                />
-                <MenuItem
-                  icon={TextAa}
-                  label="Alphabetically"
-                  onClick={() => setSortBy("alphabetical")}
-                  selected={sortBy === "alphabetical"}
-                  endIcon={sortBy === "alphabetical" ? <Check /> : undefined}
-                />
-                <MenuItem
-                  icon={CheckCircle}
-                  label="Completion Status"
-                  onClick={() => setSortBy("completed")}
-                  selected={sortBy === "completed"}
-                  endIcon={sortBy === "completed" ? <Check /> : undefined}
-                />
-              </MenuSection>
-
-              <DropdownMenuSeparator className="my-1.5" />
-
-              <MenuSection title="Actions">
-                <MenuItem
-                  icon={Trash}
-                  label="Clear All"
-                  onClick={() => clearAllTodos()}
-                  variant="danger"
-                />
-                <MenuItem
-                  icon={CheckSquare}
-                  label="Clear Completed"
-                  onClick={() => clearCompletedTodos()}
-                  endIcon={<Check className="w-3.5 h-3.5 opacity-50" />}
-                />
-                <MenuItem
-                  icon={Square}
-                  label="Clear Incomplete"
-                  onClick={() => clearIncompleteTodos()}
-                  endIcon={<X className="w-3.5 h-3.5 opacity-50" />}
-                />
-              </MenuSection>
-
-              <DropdownMenuSeparator className="my-1.5" />
-
               <MenuSection title="Appearance">
-                <div className="px-2 py-1.5 flex justify-start">
+                <div className="px-2 py-1 flex justify-start">
                   <ThemeToggleButton />
                 </div>
               </MenuSection>
 
-              <DropdownMenuSeparator className="my-1.5" />
+              <DropdownMenuSeparator className="my-1" />
 
               <MenuSection title="AI Model">
                 {modelOptions.map((model) => (
@@ -624,9 +570,19 @@ export default function Todo() {
                     label={model.name}
                     onClick={() => setSelectedModel(model.id)}
                     selected={selectedModel === model.id}
-                    endIcon={selectedModel === model.id ? <Check /> : undefined}
+                    endIcon={selectedModel === model.id ? <Check className="w-3 h-3" /> : undefined}
                   />
                 ))}
+              </MenuSection>
+
+              <DropdownMenuSeparator className="my-1" />
+
+              <MenuSection title="Help">
+                <MenuItem
+                  icon={Question}
+                  label="View Commands"
+                  onClick={() => setShowFaqDialog(true)}
+                />
               </MenuSection>
             </DropdownMenuContent>
           </DropdownMenu>
