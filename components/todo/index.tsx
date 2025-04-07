@@ -564,16 +564,6 @@ export default function Todo() {
                   />
                 ))}
               </MenuSection>
-
-              <DropdownMenuSeparator className="my-1" />
-
-              <MenuSection title="Help">
-                <MenuItem
-                  icon={Question}
-                  label="View Commands"
-                  onClick={() => setShowFaqDialog(true)}
-                />
-              </MenuSection>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -656,7 +646,7 @@ export default function Todo() {
                   className="shrink-0 h-9 w-9 rounded-lg hover:bg-muted"
                   disabled={isLoading || isProcessingSpeech}
                 >
-                  <DotsThree className="w-5 h-5 text-muted-foreground" weight="bold" />
+                  <Question className="w-5 h-5 text-muted-foreground" weight="bold" />
                 </Button>
               </DrawerTrigger>
               <DrawerContent className="px-4 [&>div:first-child]:hidden">
@@ -692,7 +682,7 @@ export default function Todo() {
                   className="shrink-0 h-9 w-9 rounded-lg hover:bg-muted"
                   disabled={isLoading || isProcessingSpeech}
                 >
-                  <DotsThree className="w-5 h-5 text-muted-foreground" weight="bold" />
+                  <Question className="w-5 h-5 text-muted-foreground" weight="bold" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md rounded-2xl border shadow-lg gap-2 p-3 [&>button]:hidden">

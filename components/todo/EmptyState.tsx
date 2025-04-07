@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Plus } from "@phosphor-icons/react";
+import { ArrowRight } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
@@ -35,8 +35,8 @@ export function EmptyState({ selectedDate, focusInput }: EmptyStateProps) {
         className="mt-6 text-sm font-normal"
         onClick={focusInput}
       >
-        <Plus className="w-4 h-4 mr-2" />
-        Add a task
+        <ArrowRight className="w-4 h-4 mr-2" weight="bold" />
+        Send action
       </Button>
     </div>
   );
