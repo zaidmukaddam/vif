@@ -262,6 +262,7 @@ export default function Todo() {
                 completed: false,
                 emoji: action.emoji || selectedEmoji,
                 date: todoDate,
+                time: action.time,
               })
             )
             break;
@@ -313,6 +314,7 @@ export default function Todo() {
                     text: action.text || todo.text,
                     emoji: action.emoji || todo.emoji,
                     date: action.targetDate ? new Date(action.targetDate) : todo.date,
+                    time: action.time || todo.time,
                   });
                   console.log("AI updated todo:", updatedTodo);
                   return updatedTodo;
@@ -393,21 +395,21 @@ export default function Todo() {
     setEditEmoji("");
   };
 
-  const handleEditTodo = (id: string) => {
-    if (editText.trim()) {
-      const originalTodo = todos.find(todo => todo.id === id);
-      console.log("Editing todo:", { originalTodo, newText: editText, newEmoji: editEmoji });
+  const handleEditTodo = (updatedTodo: TodoItem) => {
+    if (updatedTodo.text.trim()) {
+      console.log("Editing todo:", updatedTodo);
 
       setTodos(
         todos.map((todo) => {
-          if (todo.id === id) {
-            const updatedTodo = serializeTodo({
+          if (todo.id === updatedTodo.id) {
+            const updated = serializeTodo({
               ...todo,
-              text: editText,
-              emoji: editEmoji
+              text: updatedTodo.text,
+              emoji: updatedTodo.emoji,
+              time: updatedTodo.time
             });
-            console.log("Updated todo:", updatedTodo);
-            return updatedTodo;
+            console.log("Updated todo:", updated);
+            return updated;
           }
           return todo;
         })

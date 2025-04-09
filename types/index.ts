@@ -4,6 +4,7 @@ export interface TodoItem {
   completed: boolean;
   emoji?: string;
   date: Date;
+  time?: string; // Optional time in HH:mm format
 }
 
 export type SortOption = "newest" | "oldest" | "alphabetical" | "completed";
@@ -23,7 +24,7 @@ export interface TodoListProps {
   editEmoji: string;
   setEditText: (text: string) => void;
   setEditEmoji: (emoji: string) => void;
-  handleEditTodo: (id: string) => void;
+  handleEditTodo: (todo: TodoItem) => void;
   cancelEditing: () => void;
 }
 

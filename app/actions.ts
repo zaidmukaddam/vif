@@ -4,7 +4,7 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { vif } from "@/lib/models";
 import { transcribe } from "orate";
-import { Groq } from 'orate/groq';
+import { ElevenLabs } from 'orate/elevenlabs';
 import { DetermineActionFn } from "@/types/actions";
 
 export const determineAction: DetermineActionFn = async (text, emoji, todos, model = "vif-llama", timezone = "UTC") => {
@@ -13,14 +13,40 @@ export const determineAction: DetermineActionFn = async (text, emoji, todos, mod
     console.log("Model:", model);
     console.log("Timezone:", timezone);
 
-    // Create dates in the user's timezone
-    const today = new Date();
-    const todayInTz = new Date(today.toLocaleString("en-US", { timeZone: timezone }));
-    const todayStr = todayInTz.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-    const tomorrow = new Date(todayInTz);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    // Create dates in the user's timezone using a more reliable method
+    function getDateInTimezone(timezone: string) {
+        // Get current date/time string in the user's timezone
+        const now = new Date();
+        const options: Intl.DateTimeFormatOptions = { 
+            timeZone: timezone,
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+        
+        // Format date in timezone
+        const dateTimeString = new Intl.DateTimeFormat('en-US', options).format(now);
+        
+        // Parse components from formatted string (formats like "04/10/2024, 00:30:00")
+        const [datePart] = dateTimeString.split(', ');
+        const [month, day, year] = datePart.split('/').map(num => parseInt(num, 10));
+        
+        // Create a date string in YYYY-MM-DD format
+        return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    }
+    
+    // Get today and tomorrow in timezone
+    const todayStr = getDateInTimezone(timezone);
+    
+    // For tomorrow, we need to add one day
+    const todayDate = new Date(todayStr);
+    const tomorrowDate = new Date(todayDate);
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+    const tomorrowStr = tomorrowDate.toISOString().split('T')[0];
 
     console.log("Today in timezone:", todayStr);
     console.log("Tomorrow in timezone:", tomorrowStr);
@@ -51,6 +77,30 @@ export const determineAction: DetermineActionFn = async (text, emoji, todos, mod
         Parse relative dates like "today", "tomorrow", "next week", "in 3 days", etc.
         For specific days like "monday", "tuesday", etc., use the next occurrence of that day.
         Always return dates in YYYY-MM-DD format.
+
+        The user can specify time in their commands in various natural ways:
+        Examples with time:
+        - "meeting with John at 3pm tomorrow" -> text: "meeting with John", time: "15:00", targetDate: ${tomorrowStr}
+        - "dentist appointment at 2:30" -> text: "dentist appointment", time: "14:30", targetDate: ${todayStr}
+        - "call mom at 9am" -> text: "call mom", time: "09:00"
+        - "lunch with team at 12:15pm" -> text: "lunch with team", time: "12:15"
+        - "daily standup at 10" -> text: "daily standup", time: "10:00"
+        - "gym session 7am tomorrow" -> text: "gym session", time: "07:00", targetDate: ${tomorrowStr}
+        - "movie night at 8:30pm friday" -> text: "movie night", time: "20:30"
+        - "coffee break 3:30" -> text: "coffee break", time: "15:30"
+        
+        Extract time in 24-hour format (HH:mm). Support various time formats:
+        - "3pm" -> "15:00"
+        - "3:30pm" -> "15:30"
+        - "15:00" -> "15:00"
+        - "9" -> "09:00"
+        - "9:15am" -> "09:15"
+        - "12" -> "12:00"
+        - "12:30pm" -> "12:30"
+        
+        If no time is specified, omit the time field.
+        Always extract the actual task text separately from the time and date information.
+        Keep emojis relevant to both the task and time (e.g., ⏰, 🕐, or 📅 for time-sensitive tasks).
 
 ${todos ? `<todo_list>
 ${todos?.map(todo => `- ${todo.id}: ${todo.text} (${todo.emoji})`).join("\n")}
@@ -112,6 +162,7 @@ ${todos?.map(todo => `- ${todo.id}: ${todo.text} (${todo.emoji})`).join("\n")}
                 todoId: z.string().describe("The id of the todo item to act upon").optional(),
                 emoji: z.string().describe("The emoji of the todo item").optional(),
                 targetDate: z.string().describe("The target date for the todo item in YYYY-MM-DD format").optional(),
+                time: z.string().describe("The time for the todo item in HH:mm format (24-hour)").optional(),
                 sortBy: z.enum(
                     ["newest", "oldest", "alphabetical", "completed"]
                 ).describe("The sort order").optional(),
@@ -143,7 +194,7 @@ export async function convertSpeechToText(audioFile: any) {
     });
 
     const text = await transcribe({
-        model: new Groq().stt("whisper-large-v3-turbo"),
+        model: new ElevenLabs().stt("scribe_v1"),
         audio: audioFile,
     });
 
