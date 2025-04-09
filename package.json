@@ -50,11 +50,9 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/web-push": "^3.6.4",
     "axios": "^1.8.4",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "web-push": "^3.6.7"
+    "typescript": "^5"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
