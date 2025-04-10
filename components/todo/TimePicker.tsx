@@ -17,7 +17,6 @@ import {
 import {
   Drawer,
   DrawerContent,
-  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -41,57 +40,85 @@ export function formatTimeDisplay(time: string) {
 export function TimePicker({ time, onChange, className }: TimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [period, setPeriod] = useState<"AM" | "PM">("AM");
   
-  // Check if we're on mobile on component mount
   useEffect(() => {
     const checkIfMobile = () => setIsMobile(window.innerWidth < 768);
-    
-    // Initial check
     checkIfMobile();
-    
-    // Add event listener for window resize
     window.addEventListener('resize', checkIfMobile);
-    
-    // Clean up
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  // Initialize period based on current time
+  useEffect(() => {
+    if (time) {
+      const hour = parseInt(time.split(":")[0]);
+      setPeriod(hour >= 12 ? "PM" : "AM");
+    }
+  }, [time]);
+
+  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
   const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
 
+  const handleHourChange = (value: string) => {
+    let hour = parseInt(value);
+    if (period === "PM" && hour !== 12) hour += 12;
+    if (period === "AM" && hour === 12) hour = 0;
+    const mins = time ? time.split(":")[1] : "00";
+    onChange(`${hour.toString().padStart(2, "0")}:${mins}`);
+  };
+
+  const handlePeriodChange = (newPeriod: "AM" | "PM") => {
+    setPeriod(newPeriod);
+    if (!time) return;
+    
+    let [hours, minutes] = time.split(":");
+    let hour = parseInt(hours);
+    
+    if (newPeriod === "PM" && hour < 12) hour += 12;
+    if (newPeriod === "AM" && hour >= 12) hour -= 12;
+    
+    onChange(`${hour.toString().padStart(2, "0")}:${minutes}`);
+  };
+
   const TimePickerContent = ({ inDrawer = false }: { inDrawer?: boolean }) => (
-    <div className={cn("flex flex-col", inDrawer ? "gap-4 px-1" : "gap-2")}>
-      <div className={cn("flex", inDrawer ? "gap-3" : "gap-1")}>
+    <div className={cn(
+      "flex flex-col",
+      inDrawer ? "gap-6 px-4" : "gap-3"
+    )}>
+      <div className={cn(
+        "grid grid-cols-3 gap-2",
+        inDrawer ? "gap-3" : "gap-2"
+      )}>
         <Select
-          value={time ? time.split(":")[0] : ""}
-          onValueChange={(value) => {
-            const mins = time ? time.split(":")[1] : "00";
-            onChange(`${value.padStart(2, "0")}:${mins}`);
-          }}
+          value={time ? (parseInt(time.split(":")[0]) % 12 || 12).toString() : ""}
+          onValueChange={handleHourChange}
         >
           <SelectTrigger className={cn(
-            "flex-1 px-2 text-sm border rounded-md bg-muted/30 hover:bg-muted focus:ring-0",
-            inDrawer ? "h-10" : "h-8"
+            "w-full px-3 text-sm border rounded-lg bg-background hover:bg-accent focus:ring-1 focus:ring-ring",
+            inDrawer ? "h-12" : "h-9"
           )}>
-            <SelectValue placeholder="Hour" />
+            <SelectValue placeholder="HH" />
           </SelectTrigger>
           <SelectContent
-            className={cn("p-0 rounded-lg", inDrawer ? "h-[240px] w-full" : "h-[180px] w-[80px]")}
+            className={cn("p-0 rounded-lg", inDrawer ? "h-[280px]" : "h-[200px]")}
             position="popper"
           >
-            <div className="flex flex-col py-1">
-              {hours.map((hour) => (
-                <SelectItem
-                  key={hour}
-                  value={hour.toString()}
-                  className={cn("cursor-pointer text-sm", inDrawer ? "py-2 px-3" : "py-1.5 px-2")}
-                >
-                  {hour.toString().padStart(2, "0")}
-                </SelectItem>
-              ))}
-            </div>
+            {hours.map((hour) => (
+              <SelectItem
+                key={hour}
+                value={hour.toString()}
+                className={cn(
+                  "cursor-pointer text-sm justify-center",
+                  inDrawer ? "py-2.5" : "py-1.5"
+                )}
+              >
+                {hour.toString().padStart(2, "0")}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
+
         <Select
           value={time ? time.split(":")[1] : ""}
           onValueChange={(value) => {
@@ -100,37 +127,68 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
           }}
         >
           <SelectTrigger className={cn(
-            "flex-1 px-2 text-sm border rounded-md bg-muted/30 hover:bg-muted focus:ring-0",
-            inDrawer ? "h-10" : "h-8"
+            "w-full px-3 text-sm border rounded-lg bg-background hover:bg-accent focus:ring-1 focus:ring-ring",
+            inDrawer ? "h-12" : "h-9"
           )}>
-            <SelectValue placeholder="Min" />
+            <SelectValue placeholder="MM" />
           </SelectTrigger>
           <SelectContent
-            className={cn("p-0 rounded-lg", inDrawer ? "h-[240px] w-full" : "h-[180px] w-[80px]")}
+            className={cn("p-0 rounded-lg", inDrawer ? "h-[280px]" : "h-[200px]")}
             position="popper"
           >
-            <div className="flex flex-col py-1">
-              {minutes.map((minute) => (
-                <SelectItem
-                  key={minute}
-                  value={minute.toString().padStart(2, "0")}
-                  className={cn("cursor-pointer text-sm", inDrawer ? "py-2 px-3" : "py-1.5 px-2")}
-                >
-                  {minute.toString().padStart(2, "0")}
-                </SelectItem>
-              ))}
-            </div>
+            {minutes.map((minute) => (
+              <SelectItem
+                key={minute}
+                value={minute.toString().padStart(2, "0")}
+                className={cn(
+                  "cursor-pointer text-sm justify-center",
+                  inDrawer ? "py-2.5" : "py-1.5"
+                )}
+              >
+                {minute.toString().padStart(2, "0")}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={period}
+          onValueChange={(value: "AM" | "PM") => handlePeriodChange(value)}
+        >
+          <SelectTrigger className={cn(
+            "w-full px-3 text-sm border rounded-lg bg-background hover:bg-accent focus:ring-1 focus:ring-ring",
+            inDrawer ? "h-12" : "h-9"
+          )}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent
+            className="p-0 rounded-lg"
+            position="popper"
+          >
+            {["AM", "PM"].map((p) => (
+              <SelectItem
+                key={p}
+                value={p}
+                className={cn(
+                  "cursor-pointer text-sm justify-center",
+                  inDrawer ? "py-2.5" : "py-1.5"
+                )}
+              >
+                {p}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
-      <div className={cn("flex justify-between", inDrawer ? "gap-3 mt-2" : "gap-1 mt-1")}>
+
+      <div className={cn(
+        "grid grid-cols-2 gap-2",
+        inDrawer ? "mt-2" : "mt-1"
+      )}>
         <Button
-          variant="ghost"
-          size={inDrawer ? "default" : "sm"}
-          className={cn(
-            "flex-1 text-muted-foreground hover:text-foreground rounded-md",
-            inDrawer ? "h-10 text-sm" : "h-7 text-xs"
-          )}
+          variant="outline"
+          size={inDrawer ? "lg" : "default"}
+          className="w-full rounded-lg font-medium"
           onClick={() => {
             onChange("");
             setIsOpen(false);
@@ -139,11 +197,8 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
           Clear
         </Button>
         <Button
-          size={inDrawer ? "default" : "sm"}
-          className={cn(
-            "flex-1 rounded-md",
-            inDrawer ? "h-10 text-sm" : "h-7 text-xs"
-          )}
+          size={inDrawer ? "lg" : "default"}
+          className="w-full rounded-lg font-medium"
           onClick={() => setIsOpen(false)}
         >
           Set time
@@ -160,24 +215,23 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
             <Button 
               variant={time ? "secondary" : "ghost"}
               size="sm"
-              className={cn("h-8 text-xs flex items-center gap-1.5 px-2.5 rounded-md", className)}
+              className={cn(
+                "h-9 text-sm flex items-center gap-2 px-3 rounded-lg transition-colors",
+                className
+              )}
             >
-              <Clock className="w-3.5 h-3.5" weight="fill" />
-              {time ? formatTimeDisplay(time) : "Add time"}
+              <Clock className="w-4 h-4" weight="fill" />
+              {time ? formatTimeDisplay(time) : "Set time"}
             </Button>
           </DrawerTrigger>
-          <DrawerContent className="px-4 [&>div:first-child]:hidden">
-            <DrawerHeader className="text-center pb-2">
-              <div className="mx-auto w-12 h-1 bg-muted-foreground/20 rounded-full mb-4" />
-              <DrawerTitle className="text-lg font-medium">Set Time</DrawerTitle>
-              <DrawerDescription className="text-sm text-muted-foreground">
-                {time ? formatTimeDisplay(time) : "No time set"}
-              </DrawerDescription>
+          <DrawerContent className="px-4 pb-6">
+            <DrawerHeader className="text-center pt-6 pb-6">
+              <DrawerTitle className="text-xl font-semibold mb-1">Choose time</DrawerTitle>
+              <p className="text-sm text-muted-foreground">
+                {time ? formatTimeDisplay(time) : "No time selected"}
+              </p>
             </DrawerHeader>
-
-            <div className="p-4">
-              <TimePickerContent inDrawer={true} />
-            </div>
+            <TimePickerContent inDrawer={true} />
           </DrawerContent>
         </Drawer>
       ) : (
@@ -186,13 +240,16 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
             <Button 
               variant={time ? "secondary" : "ghost"}
               size="sm"
-              className={cn("h-8 text-xs flex items-center gap-1.5 px-2.5 rounded-md", className)}
+              className={cn(
+                "h-9 text-sm flex items-center gap-2 px-3 rounded-lg transition-colors",
+                className
+              )}
             >
-              <Clock className="w-3.5 h-3.5" weight="fill" />
-              {time ? formatTimeDisplay(time) : "Add time"}
+              <Clock className="w-4 h-4" weight="fill" />
+              {time ? formatTimeDisplay(time) : "Set time"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-2 rounded-xl" align="start">
+          <PopoverContent className="w-[280px] p-3 rounded-xl" align="start">
             <TimePickerContent />
           </PopoverContent>
         </Popover>

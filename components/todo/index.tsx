@@ -81,6 +81,7 @@ import { FaqContent } from "./FaqContent";
 import { EmptyState } from "./EmptyState";
 import { LoadingState } from "./LoadingState";
 import { ThemeToggleButton } from "@/components/theme-toggle";
+import { modelOptions } from "@/lib/models";
 
 // Add these interfaces before the main component
 interface MenuItemProps {
@@ -160,17 +161,6 @@ export default function Todo() {
     startRecording,
     stopRecording
   } = useSpeechRecognition();
-
-  const modelOptions: { id: Model; name: string }[] = [
-    { id: "vif-llama-4-scout", name: "Llama 4 Scout" },
-    { id: "vif-llama-4-maverick", name: "Llama 4 Maverick" },
-    { id: "vif-llama", name: "Llama 3.3 70B" },
-    { id: "vif-claude", name: "Claude 3.7 Sonnet" },
-    { id: "vif-qwq", name: "Qwen QWQ 32B" },
-    { id: "vif-qwen", name: "Qwen 2.5 32B" },
-    { id: "vif-r1", name: "DeepSeek R1 70B" },
-    { id: "vif-quasar-alpha", name: "Quasar Alpha" },
-  ];
 
   // Add effect to indicate client-side hydration is complete
   useEffect(() => {
