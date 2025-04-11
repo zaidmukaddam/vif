@@ -15,7 +15,7 @@ export const vif = customProvider({
         "vif-qwq": groq("qwen-qwq-32b"),
         "vif-qwen": groq("qwen-2.5-32b"),
         "vif-r1": groq("deepseek-r1-distill-llama-70b"),
-        "vif-quasar-alpha": openrouter("openrouter/quasar-alpha"),
+        "vif-optimus-alpha": openrouter("openrouter/optimus-alpha"),
     },
 });
 
@@ -28,5 +28,5 @@ export const modelOptions: { id: Model; name: string }[] = [
     { id: "vif-qwq", name: "Qwen QWQ 32B" },
     { id: "vif-qwen", name: "Qwen 2.5 32B" },
     { id: "vif-r1", name: "DeepSeek R1 70B" },
-    { id: "vif-quasar-alpha", name: "Quasar Alpha" },
+    { id: "vif-optimus-alpha", name: "Optimus Alpha" },
 ];
