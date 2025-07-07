@@ -157,7 +157,7 @@ ${todos?.map(todo => `- ${todo.id}: ${todo.text} (${todo.emoji})`).join("\n")}
         schema: z.object({
             actions: z.array(z.object({
                 action: z.enum(["add", "delete", "mark", "sort", "edit", "clear",]).describe("The action to take"),
-                text: z.string().describe("The text of the todo item").optional(),
+                text: z.string().describe("The text of the todo item.").optional(),
                 todoId: z.string().describe("The id of the todo item to act upon").optional(),
                 emoji: z.string().describe("The emoji of the todo item").optional(),
                 targetDate: z.string().describe("The target date for the todo item in YYYY-MM-DD format").optional(),

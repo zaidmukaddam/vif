@@ -87,7 +87,7 @@ export function TodoList({
         <div
           key={todo.id}
           className={cn(
-            "group flex items-center px-4 py-2.5 gap-3",
+            "group flex items-start px-4 py-2.5 gap-3",
             todo.completed ? "text-muted-foreground/50" : "hover:bg-muted/50",
             editingTodoId === todo.id && "bg-muted/80 rounded-lg",
             editingTodoId !== todo.id && "cursor-pointer",
@@ -199,7 +199,7 @@ export function TodoList({
             </>
           ) : (
             <>
-              <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+              <div onClick={(e: React.MouseEvent) => e.stopPropagation()} className="mt-0.5">
                 <CircleCheckbox
                   checked={todo.completed}
                   onCheckedChange={() => onToggle(todo.id)}
@@ -211,21 +211,25 @@ export function TodoList({
                 />
               </div>
               <div
-                className="flex-1 flex items-center min-w-0 cursor-pointer"
+                className="flex-1 flex items-start min-w-0 cursor-pointer"
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
                   onToggle(todo.id);
                 }}
               >
                 {todo.emoji && (
-                  <span className="mr-2 text-base flex-shrink-0">
+                  <span className="mr-2 text-base flex-shrink-0 mt-0.5">
                     {todo.emoji}
                   </span>
                 )}
                 <div className="flex flex-col min-w-0">
                   <span
                     className={cn(
-                      "truncate text-[15px]",
+                      todo.text.length > 50 
+                        ? "text-xs leading-relaxed" 
+                        : todo.text.length > 30 
+                        ? "text-sm leading-relaxed" 
+                        : "text-[15px] leading-relaxed",
                       todo.completed && "line-through"
                     )}
                   >
