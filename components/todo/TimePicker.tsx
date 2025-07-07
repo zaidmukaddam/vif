@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { Clock } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
   Popover,
@@ -41,12 +41,12 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [period, setPeriod] = useState<"AM" | "PM">("AM");
-  
+
   useEffect(() => {
     const checkIfMobile = () => setIsMobile(window.innerWidth < 768);
     checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
-    return () => window.removeEventListener('resize', checkIfMobile);
+    window.addEventListener("resize", checkIfMobile);
+    return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
 
   // Initialize period based on current time
@@ -71,37 +71,40 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
   const handlePeriodChange = (newPeriod: "AM" | "PM") => {
     setPeriod(newPeriod);
     if (!time) return;
-    
+
     let [hours, minutes] = time.split(":");
     let hour = parseInt(hours);
-    
+
     if (newPeriod === "PM" && hour < 12) hour += 12;
     if (newPeriod === "AM" && hour >= 12) hour -= 12;
-    
+
     onChange(`${hour.toString().padStart(2, "0")}:${minutes}`);
   };
 
   const TimePickerContent = ({ inDrawer = false }: { inDrawer?: boolean }) => (
-    <div className={cn(
-      "flex flex-col",
-      inDrawer ? "gap-6 px-4" : "gap-3"
-    )}>
-      <div className={cn(
-        "grid grid-cols-3 gap-2",
-        inDrawer ? "gap-3" : "gap-2"
-      )}>
+    <div className={cn("flex flex-col", inDrawer ? "gap-6 px-4" : "gap-3")}>
+      <div
+        className={cn("grid grid-cols-3 gap-2", inDrawer ? "gap-3" : "gap-2")}
+      >
         <Select
-          value={time ? (parseInt(time.split(":")[0]) % 12 || 12).toString() : ""}
+          value={
+            time ? (parseInt(time.split(":")[0]) % 12 || 12).toString() : ""
+          }
           onValueChange={handleHourChange}
         >
-          <SelectTrigger className={cn(
-            "w-full px-3 text-sm border rounded-lg bg-background hover:bg-accent focus:ring-1 focus:ring-ring",
-            inDrawer ? "h-12" : "h-9"
-          )}>
+          <SelectTrigger
+            className={cn(
+              "w-full px-3 text-sm border rounded-lg bg-background hover:bg-accent focus:ring-1 focus:ring-ring",
+              inDrawer ? "h-12" : "h-9"
+            )}
+          >
             <SelectValue placeholder="HH" />
           </SelectTrigger>
           <SelectContent
-            className={cn("p-0 rounded-lg", inDrawer ? "h-[280px]" : "h-[200px]")}
+            className={cn(
+              "p-0 rounded-lg",
+              inDrawer ? "h-[280px]" : "h-[200px]"
+            )}
             position="popper"
           >
             {hours.map((hour) => (
@@ -126,14 +129,19 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
             onChange(`${hrs}:${value}`);
           }}
         >
-          <SelectTrigger className={cn(
-            "w-full px-3 text-sm border rounded-lg bg-background hover:bg-accent focus:ring-1 focus:ring-ring",
-            inDrawer ? "h-12" : "h-9"
-          )}>
+          <SelectTrigger
+            className={cn(
+              "w-full px-3 text-sm border rounded-lg bg-background hover:bg-accent focus:ring-1 focus:ring-ring",
+              inDrawer ? "h-12" : "h-9"
+            )}
+          >
             <SelectValue placeholder="MM" />
           </SelectTrigger>
           <SelectContent
-            className={cn("p-0 rounded-lg", inDrawer ? "h-[280px]" : "h-[200px]")}
+            className={cn(
+              "p-0 rounded-lg",
+              inDrawer ? "h-[280px]" : "h-[200px]"
+            )}
             position="popper"
           >
             {minutes.map((minute) => (
@@ -155,16 +163,15 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
           value={period}
           onValueChange={(value: "AM" | "PM") => handlePeriodChange(value)}
         >
-          <SelectTrigger className={cn(
-            "w-full px-3 text-sm border rounded-lg bg-background hover:bg-accent focus:ring-1 focus:ring-ring",
-            inDrawer ? "h-12" : "h-9"
-          )}>
+          <SelectTrigger
+            className={cn(
+              "w-full px-3 text-sm border rounded-lg bg-background hover:bg-accent focus:ring-1 focus:ring-ring",
+              inDrawer ? "h-12" : "h-9"
+            )}
+          >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent
-            className="p-0 rounded-lg"
-            position="popper"
-          >
+          <SelectContent className="p-0 rounded-lg" position="popper">
             {["AM", "PM"].map((p) => (
               <SelectItem
                 key={p}
@@ -181,10 +188,7 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
         </Select>
       </div>
 
-      <div className={cn(
-        "grid grid-cols-2 gap-2",
-        inDrawer ? "mt-2" : "mt-1"
-      )}>
+      <div className={cn("grid grid-cols-2 gap-2", inDrawer ? "mt-2" : "mt-1")}>
         <Button
           variant="outline"
           size={inDrawer ? "lg" : "default"}
@@ -212,7 +216,7 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
       {isMobile ? (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerTrigger asChild>
-            <Button 
+            <Button
               variant={time ? "secondary" : "ghost"}
               size="sm"
               className={cn(
@@ -226,7 +230,9 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
           </DrawerTrigger>
           <DrawerContent className="px-4 pb-6">
             <DrawerHeader className="text-center pt-6 pb-6">
-              <DrawerTitle className="text-xl font-semibold mb-1">Choose time</DrawerTitle>
+              <DrawerTitle className="text-xl font-semibold mb-1">
+                Choose time
+              </DrawerTitle>
               <p className="text-sm text-muted-foreground">
                 {time ? formatTimeDisplay(time) : "No time selected"}
               </p>
@@ -237,7 +243,7 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
       ) : (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
-            <Button 
+            <Button
               variant={time ? "secondary" : "ghost"}
               size="sm"
               className={cn(
@@ -256,4 +262,4 @@ export function TimePicker({ time, onChange, className }: TimePickerProps) {
       )}
     </>
   );
-} 
+}

@@ -47,5 +47,3 @@ export interface CircleCheckboxProps {
   onCheckedChange?: (checked: boolean) => void;
   className?: string;
 } 
-
-export type Model = "vif-llama-4-scout" |"vif-llama-4-maverick" | "vif-llama" | "vif-claude" | "vif-qwq" | "vif-qwen" | "vif-r1" | "vif-grok-3" | "vif-optimus-alpha";

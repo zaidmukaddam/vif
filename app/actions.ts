@@ -1,13 +1,12 @@
 "use server";
 
-import { generateObject } from "ai";
+import { generateObject, experimental_transcribe as transcribe } from "ai";
 import { z } from "zod";
 import { vif } from "@/lib/models";
-import { transcribe } from "orate";
-import { ElevenLabs } from 'orate/elevenlabs';
+import { elevenlabs } from '@ai-sdk/elevenlabs';
 import { DetermineActionFn } from "@/types/actions";
 
-export const determineAction: DetermineActionFn = async (text, emoji, todos, model = "vif-llama", timezone = "UTC") => {
+export const determineAction: DetermineActionFn = async (text, emoji, todos, model = "vif-default", timezone = "UTC") => {
     console.log("Determining action...");
     console.log(text, emoji, todos);
     console.log("Model:", model);
@@ -17,31 +16,31 @@ export const determineAction: DetermineActionFn = async (text, emoji, todos, mod
     function getDateInTimezone(timezone: string) {
         // Get current date/time string in the user's timezone
         const now = new Date();
-        const options: Intl.DateTimeFormatOptions = { 
+        const options: Intl.DateTimeFormatOptions = {
             timeZone: timezone,
-            year: 'numeric', 
-            month: '2-digit', 
+            year: 'numeric',
+            month: '2-digit',
             day: '2-digit',
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
             hour12: false
         };
-        
+
         // Format date in timezone
         const dateTimeString = new Intl.DateTimeFormat('en-US', options).format(now);
-        
+
         // Parse components from formatted string (formats like "04/10/2024, 00:30:00")
         const [datePart] = dateTimeString.split(', ');
         const [month, day, year] = datePart.split('/').map(num => parseInt(num, 10));
-        
+
         // Create a date string in YYYY-MM-DD format
         return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     }
-    
+
     // Get today and tomorrow in timezone
     const todayStr = getDateInTimezone(timezone);
-    
+
     // For tomorrow, we need to add one day
     const todayDate = new Date(todayStr);
     const tomorrowDate = new Date(todayDate);
@@ -193,9 +192,9 @@ export async function convertSpeechToText(audioFile: any) {
         name: audioFile.name || "unnamed"
     });
 
-    const text = await transcribe({
-        model: new ElevenLabs().stt("scribe_v1"),
-        audio: audioFile,
+    const { text } = await transcribe({
+        model: elevenlabs.transcription("scribe_v1"),
+        audio: await audioFile.arrayBuffer(),
     });
 
     console.log("Transcribed text:", text);

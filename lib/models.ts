@@ -1,32 +1,30 @@
 import { groq } from "@ai-sdk/groq";
-import { openrouter } from "@openrouter/ai-sdk-provider";
 import { anthropic } from "@ai-sdk/anthropic";
 import { xai } from "@ai-sdk/xai";
+import { openai, createOpenAI } from "@ai-sdk/openai";
 import { customProvider } from "ai";
-import { Model } from "@/types";
 
-export const vif = customProvider({
-    languageModels: {
-        "vif-llama-4-scout": groq("meta-llama/llama-4-scout-17b-16e-instruct"),
-        "vif-llama-4-maverick": groq("meta-llama/llama-4-maverick-17b-128e-instruct"),
-        "vif-llama": groq("llama-3.3-70b-versatile"),
-        "vif-claude": anthropic("claude-3-7-sonnet-20250219"),
-        "vif-grok-3": xai("grok-3-fast-beta"),
-        "vif-qwq": groq("qwen-qwq-32b"),
-        "vif-qwen": groq("qwen-2.5-32b"),
-        "vif-r1": groq("deepseek-r1-distill-llama-70b"),
-        "vif-optimus-alpha": openrouter("openrouter/optimus-alpha"),
-    },
+const fireworks = createOpenAI({
+  apiKey: process.env.HF_TOKEN,
+  baseURL: "https://router.huggingface.co/fireworks-ai/inference/v1",
 });
 
+export const vif = customProvider({
+  languageModels: {
+    "vif-claude": anthropic("claude-4-sonnet-20250514"),
+    "vif-default": xai("grok-3-mini-fast"),
+    "vif-qwen": groq("qwen-qwq-32b"),
+    "vif-openai": openai("gpt-4.1-nano"),
+    "vif-r1": fireworks("accounts/fireworks/models/deepseek-r1-0528"),
+  },
+});
+
+export type Model = "vif-claude" | "vif-default" | "vif-qwen" | "vif-openai" | "vif-r1";
+
 export const modelOptions: { id: Model; name: string }[] = [
-    { id: "vif-llama-4-scout", name: "Llama 4 Scout" },
-    { id: "vif-llama-4-maverick", name: "Llama 4 Maverick" },
-    { id: "vif-llama", name: "Llama 3.3 70B" },
-    { id: "vif-claude", name: "Claude 3.7 Sonnet" },
-    { id: "vif-grok-3", name: "Grok 3" },
-    { id: "vif-qwq", name: "Qwen QWQ 32B" },
-    { id: "vif-qwen", name: "Qwen 2.5 32B" },
-    { id: "vif-r1", name: "DeepSeek R1 70B" },
-    { id: "vif-optimus-alpha", name: "Optimus Alpha" },
+  { id: "vif-claude", name: "Claude 4 Sonnet" },
+  { id: "vif-openai", name: "GPT-4.1 Nano" },
+  { id: "vif-default", name: "Grok 3 Mini Fast" },
+  { id: "vif-qwen", name: "Qwen 3 32B" },
+  { id: "vif-r1", name: "DeepSeek R1" },
 ];

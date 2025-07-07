@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider"
-import { InstallPrompt } from "@/components/install-prompt"
+import { ThemeProvider } from "@/components/theme-provider";
+import { InstallPrompt } from "@/components/install-prompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
@@ -46,7 +46,7 @@ export const viewport: Viewport = {
       media: "(prefers-color-scheme: light)",
     },
   ],
-}
+};
 
 export default function RootLayout({
   children,

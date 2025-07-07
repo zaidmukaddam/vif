@@ -1,5 +1,5 @@
 import { TodoItem } from ".";
-import { Model } from ".";
+import { Model } from "@/lib/models";
 
 export type DetermineActionResponse = {
     actions: Array<{

@@ -24,4 +24,4 @@ export function CircleCheckbox({
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );
-} 
+}

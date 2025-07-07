@@ -4,13 +4,12 @@ import { useState, useEffect, Suspense, useRef } from "react";
 import { format } from "date-fns";
 import {
   List,
-  DotsThree,
   CaretDown,
   Smiley,
   Check,
   X,
   Robot,
-  Question
+  Question,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,18 +57,15 @@ import { useMicrophonePermission } from "@/hooks/use-microphone-permission";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { determineAction } from "@/app/actions";
-import {
-  TodoItem,
-  SortOption,
-  Model
-} from "@/types";
+import { TodoItem, SortOption } from "@/types";
 import {
   filterTodosByDate,
   sortTodos,
   calculateProgress,
   formatDate,
-  serializeTodo
+  serializeTodo,
 } from "@/lib/utils/todo";
+import { Model } from "@/lib/models";
 
 // custom components
 import { CircularProgress } from "./CircularProgress";
@@ -99,28 +95,42 @@ interface MenuSectionProps {
 }
 
 // Add these components before the main component
-const MenuItem = ({ icon: Icon, label, onClick, selected, variant = "default", endIcon }: MenuItemProps) => (
+const MenuItem = ({
+  icon: Icon,
+  label,
+  onClick,
+  selected,
+  variant = "default",
+  endIcon,
+}: MenuItemProps) => (
   <DropdownMenuItem
     onClick={onClick}
     className={cn(
       "rounded-lg cursor-pointer flex items-center group h-8 px-2",
       selected && "bg-muted",
-      variant === "danger" && "text-red-600 focus:text-red-600 focus:bg-red-100 dark:hover:bg-red-900/50 dark:hover:text-red-400 hover:text-red-600"
+      variant === "danger" &&
+        "text-red-600 focus:text-red-600 focus:bg-red-100 dark:hover:bg-red-900/50 dark:hover:text-red-400 hover:text-red-600"
     )}
   >
-    <Icon 
+    <Icon
       className={cn(
         "w-3.5 h-3.5 mr-2",
-        variant === "danger" && "group-hover:text-red-600 dark:group-hover:text-red-400"
-      )} 
+        variant === "danger" &&
+          "group-hover:text-red-600 dark:group-hover:text-red-400"
+      )}
     />
     <span className="text-sm">{label}</span>
     {endIcon && (
-      <span className={cn(
-        "ml-auto",
-        typeof selected === 'boolean' && !selected && "text-muted-foreground/50",
-        variant === "danger" && "group-hover:text-red-600 dark:group-hover:text-red-400"
-      )}>
+      <span
+        className={cn(
+          "ml-auto",
+          typeof selected === "boolean" &&
+            !selected &&
+            "text-muted-foreground/50",
+          variant === "danger" &&
+            "group-hover:text-red-600 dark:group-hover:text-red-400"
+        )}
+      >
         {endIcon}
       </span>
     )}
@@ -143,7 +153,10 @@ export default function Todo() {
   const [newTodo, setNewTodo] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedEmoji, setSelectedEmoji] = useState<string>("😊");
-  const [selectedModel, setSelectedModel] = useLocalStorage<Model>("selectedModel", "vif-llama");
+  const [selectedModel, setSelectedModel] = useLocalStorage<Model>(
+    "selectedModel",
+    "vif-default"
+  );
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [editingTodoId, setEditingTodoId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -155,12 +168,8 @@ export default function Todo() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const micPermission = useMicrophonePermission();
-  const {
-    isRecording,
-    isProcessingSpeech,
-    startRecording,
-    stopRecording
-  } = useSpeechRecognition();
+  const { isRecording, isProcessingSpeech, startRecording, stopRecording } =
+    useSpeechRecognition();
 
   // Add effect to indicate client-side hydration is complete
   useEffect(() => {
@@ -177,39 +186,42 @@ export default function Todo() {
     checkIfMobile();
 
     // Add event listener for window resize
-    window.addEventListener('resize', checkIfMobile);
+    window.addEventListener("resize", checkIfMobile);
 
     // Clean up
-    return () => window.removeEventListener('resize', checkIfMobile);
+    return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
 
   // Add effect to detect standalone PWA mode
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       // Check if the app is running in standalone mode (PWA)
-      const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches 
-        || (window.navigator as any).standalone 
-        || document.referrer.includes('android-app://');
-      
+      const isInStandaloneMode =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        (window.navigator as any).standalone ||
+        document.referrer.includes("android-app://");
+
       setIsStandalone(isInStandaloneMode);
-      
+
       // Listen for changes in display mode
-      const mediaQueryList = window.matchMedia('(display-mode: standalone)');
+      const mediaQueryList = window.matchMedia("(display-mode: standalone)");
       const handleChange = (e: MediaQueryListEvent) => {
-        setIsStandalone(e.matches || (window.navigator as any).standalone || false);
+        setIsStandalone(
+          e.matches || (window.navigator as any).standalone || false
+        );
       };
-      
+
       // Modern browsers use addEventListener, older ones use addListener
       if (mediaQueryList.addEventListener) {
-        mediaQueryList.addEventListener('change', handleChange);
+        mediaQueryList.addEventListener("change", handleChange);
       } else if (mediaQueryList.addListener) {
         // For Safari < 14
         mediaQueryList.addListener(handleChange);
       }
-      
+
       return () => {
         if (mediaQueryList.removeEventListener) {
-          mediaQueryList.removeEventListener('change', handleChange);
+          mediaQueryList.removeEventListener("change", handleChange);
         } else if (mediaQueryList.removeListener) {
           mediaQueryList.removeListener(handleChange);
         }
@@ -218,12 +230,18 @@ export default function Todo() {
   }, []);
 
   // Only process todos after client-side hydration
-  const filteredTodos = isClientLoaded ? filterTodosByDate(todos, selectedDate) : [];
+  const filteredTodos = isClientLoaded
+    ? filterTodosByDate(todos, selectedDate)
+    : [];
   const sortedTodos = isClientLoaded ? sortTodos(filteredTodos, sortBy) : [];
 
   // Get statistics only after client-side hydration
-  const completedCount = isClientLoaded ? filteredTodos.filter((todo) => todo.completed).length : 0;
-  const remainingCount = isClientLoaded ? filteredTodos.filter((todo) => !todo.completed).length : 0;
+  const completedCount = isClientLoaded
+    ? filteredTodos.filter((todo) => todo.completed).length
+    : 0;
+  const remainingCount = isClientLoaded
+    ? filteredTodos.filter((todo) => !todo.completed).length
+    : 0;
   const progress = isClientLoaded ? calculateProgress(filteredTodos) : 0;
 
   const handleAction = async (text: string) => {
@@ -237,7 +255,15 @@ export default function Todo() {
 
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const actions = (await determineAction(text, selectedEmoji || "", filteredTodos, selectedModel, timezone)).actions;
+      const actions = (
+        await determineAction(
+          text,
+          selectedEmoji || "",
+          filteredTodos,
+          selectedModel,
+          timezone
+        )
+      ).actions;
       actions.forEach((action) => {
         switch (action.action) {
           case "add":
@@ -254,18 +280,18 @@ export default function Todo() {
                 date: todoDate,
                 time: action.time,
               })
-            )
+            );
             break;
 
           case "delete":
             if (action.todoId) {
-              newTodos = newTodos.filter(todo => todo.id !== action.todoId);
+              newTodos = newTodos.filter((todo) => todo.id !== action.todoId);
             }
             break;
 
           case "mark":
             if (action.todoId) {
-              newTodos = newTodos.map(todo => {
+              newTodos = newTodos.map((todo) => {
                 if (todo.id === action.todoId) {
                   // If status is provided, set to that specific status
                   if (action.status === "complete") {
@@ -294,16 +320,18 @@ export default function Todo() {
                 todoId: action.todoId,
                 newText: action.text,
                 newDate: action.targetDate,
-                newEmoji: action.emoji
+                newEmoji: action.emoji,
               });
-              
-              newTodos = newTodos.map(todo => {
+
+              newTodos = newTodos.map((todo) => {
                 if (todo.id === action.todoId) {
                   const updatedTodo = serializeTodo({
                     ...todo,
                     text: action.text || todo.text,
                     emoji: action.emoji || todo.emoji,
-                    date: action.targetDate ? new Date(action.targetDate) : todo.date,
+                    date: action.targetDate
+                      ? new Date(action.targetDate)
+                      : todo.date,
                     time: action.time || todo.time,
                   });
                   console.log("AI updated todo:", updatedTodo);
@@ -320,30 +348,41 @@ export default function Todo() {
               switch (action.listToClear) {
                 case "all":
                   // Clear all todos for the selected date
-                  newTodos = todos.filter(todo =>
-                    format(todo.date, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd")
+                  newTodos = todos.filter(
+                    (todo) =>
+                      format(todo.date, "yyyy-MM-dd") !==
+                      format(selectedDate, "yyyy-MM-dd")
                   );
                   break;
                 case "completed":
                   // Clear completed todos for the selected date
-                  newTodos = todos.filter(todo =>
-                    !(todo.completed && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
+                  newTodos = todos.filter(
+                    (todo) =>
+                      !(
+                        todo.completed &&
+                        format(todo.date, "yyyy-MM-dd") ===
+                          format(selectedDate, "yyyy-MM-dd")
+                      )
                   );
                   break;
                 case "incomplete":
                   // Clear incomplete todos for the selected date
-                  newTodos = todos.filter(todo =>
-                    !((!todo.completed) && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
+                  newTodos = todos.filter(
+                    (todo) =>
+                      !(
+                        !todo.completed &&
+                        format(todo.date, "yyyy-MM-dd") ===
+                          format(selectedDate, "yyyy-MM-dd")
+                      )
                   );
                   break;
               }
             }
             break;
         }
-      })
+      });
 
       setTodos(newTodos);
-
     } catch (error) {
       console.error("AI Action failed:", error);
       setTodos([
@@ -396,7 +435,7 @@ export default function Todo() {
               ...todo,
               text: updatedTodo.text,
               emoji: updatedTodo.emoji,
-              time: updatedTodo.time
+              time: updatedTodo.time,
             });
             console.log("Updated todo:", updated);
             return updated;
@@ -411,21 +450,38 @@ export default function Todo() {
   };
 
   const clearAllTodos = () => {
-    setTodos(todos.filter(todo =>
-      format(todo.date, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd")
-    ));
+    setTodos(
+      todos.filter(
+        (todo) =>
+          format(todo.date, "yyyy-MM-dd") !== format(selectedDate, "yyyy-MM-dd")
+      )
+    );
   };
 
   const clearCompletedTodos = () => {
-    setTodos(todos.filter(todo =>
-      !(todo.completed && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
-    ));
+    setTodos(
+      todos.filter(
+        (todo) =>
+          !(
+            todo.completed &&
+            format(todo.date, "yyyy-MM-dd") ===
+              format(selectedDate, "yyyy-MM-dd")
+          )
+      )
+    );
   };
 
   const clearIncompleteTodos = () => {
-    setTodos(todos.filter(todo =>
-      !(!todo.completed && format(todo.date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd"))
-    ));
+    setTodos(
+      todos.filter(
+        (todo) =>
+          !(
+            !todo.completed &&
+            format(todo.date, "yyyy-MM-dd") ===
+              format(selectedDate, "yyyy-MM-dd")
+          )
+      )
+    );
   };
 
   const handleInputKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -455,7 +511,10 @@ export default function Todo() {
         <div className="flex items-center justify-between">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" className="!p-1 font-semibold text-2xl hover:no-underline flex items-center gap-1">
+              <Button
+                variant="ghost"
+                className="!p-1 font-semibold text-2xl hover:no-underline flex items-center gap-1"
+              >
                 {formatDate(selectedDate)}
                 <CaretDown className="w-4 h-4 text-muted-foreground" />
               </Button>
@@ -480,7 +539,9 @@ export default function Todo() {
           {completedCount > 0 && (
             <>
               <span className="text-muted-foreground/50">•</span>
-              <span className="text-muted-foreground/50">{completedCount} Completed</span>
+              <span className="text-muted-foreground/50">
+                {completedCount} Completed
+              </span>
             </>
           )}
         </div>
@@ -493,10 +554,7 @@ export default function Todo() {
           ) : sortedTodos.length === 0 && isLoading ? (
             <LoadingState />
           ) : sortedTodos.length === 0 && !isLoading ? (
-            <EmptyState
-              selectedDate={selectedDate}
-              focusInput={focusInput}
-            />
+            <EmptyState selectedDate={selectedDate} focusInput={focusInput} />
           ) : (
             <TodoList
               todos={sortedTodos}
@@ -515,14 +573,19 @@ export default function Todo() {
         </Suspense>
       </div>
 
-      <div className={cn(
-        "fixed bottom-0 left-0 right-0 p-4 bg-background border-t transition-all duration-200 ease-in-out",
-        isStandalone && "pb-8",
-        isInputFocused && "pb-4"
-      )}>
+      <div
+        className={cn(
+          "fixed bottom-0 left-0 right-0 p-4 bg-background border-t transition-all duration-200 ease-in-out",
+          isStandalone && "pb-8",
+          isInputFocused && "pb-4"
+        )}
+      >
         <div className="max-w-md mx-auto flex items-center space-x-2">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild className="!outline-0 !ring-0 focus:!outline-0 focus:!ring-0">
+            <DropdownMenuTrigger
+              asChild
+              className="!outline-0 !ring-0 focus:!outline-0 focus:!ring-0"
+            >
               <Button
                 variant="ghost"
                 size="icon"
@@ -552,7 +615,11 @@ export default function Todo() {
                     label={model.name}
                     onClick={() => setSelectedModel(model.id)}
                     selected={selectedModel === model.id}
-                    endIcon={selectedModel === model.id ? <Check className="w-3 h-3" /> : undefined}
+                    endIcon={
+                      selectedModel === model.id ? (
+                        <Check className="w-3 h-3" />
+                      ) : undefined
+                    }
                   />
                 ))}
               </MenuSection>
@@ -571,7 +638,10 @@ export default function Todo() {
                   {selectedEmoji ? (
                     <span>{selectedEmoji}</span>
                   ) : (
-                    <Smiley className="w-5 h-5 text-muted-foreground" weight="fill" />
+                    <Smiley
+                      className="w-5 h-5 text-muted-foreground"
+                      weight="fill"
+                    />
                   )}
                 </Button>
               </PopoverTrigger>
@@ -588,9 +658,7 @@ export default function Todo() {
                     }}
                     className="h-full"
                   >
-                    <EmojiPickerSearch
-                      placeholder="Search emoji..."
-                    />
+                    <EmojiPickerSearch placeholder="Search emoji..." />
                     <EmojiPickerContent className="h-[220px]" />
                     <EmojiPickerFooter className="border-t-0 p-1.5" />
                   </EmojiPicker>
@@ -601,7 +669,9 @@ export default function Todo() {
             <Input
               ref={inputRef}
               type="text"
-              placeholder={isLoading ? "Processing..." : "insert or send action"}
+              placeholder={
+                isLoading ? "Processing..." : "insert or send action"
+              }
               value={newTodo}
               onChange={(e) => setNewTodo(e.target.value)}
               onKeyUp={handleInputKeyUp}
@@ -638,13 +708,18 @@ export default function Todo() {
                   className="shrink-0 h-9 w-9 rounded-lg hover:bg-muted"
                   disabled={isLoading || isProcessingSpeech}
                 >
-                  <Question className="w-5 h-5 text-muted-foreground" weight="bold" />
+                  <Question
+                    className="w-5 h-5 text-muted-foreground"
+                    weight="bold"
+                  />
                 </Button>
               </DrawerTrigger>
               <DrawerContent className="px-4 [&>div:first-child]:hidden">
                 <DrawerHeader className="text-center pb-1">
                   <div className="mx-auto w-12 h-1 bg-muted-foreground/20 rounded-full mb-4" />
-                  <DrawerTitle className="text-xl font-semibold">Help & FAQ</DrawerTitle>
+                  <DrawerTitle className="text-xl font-semibold">
+                    Help & FAQ
+                  </DrawerTitle>
                   <DrawerDescription className="text-muted-foreground text-sm">
                     Frequently asked questions about Vif
                   </DrawerDescription>
@@ -657,7 +732,10 @@ export default function Todo() {
                 <DrawerFooter className="mt-2 pb-6">
                   <div className="flex justify-end">
                     <DrawerClose asChild>
-                      <Button variant="secondary" className="rounded-full px-6 h-9 w-full">
+                      <Button
+                        variant="secondary"
+                        className="rounded-full px-6 h-9 w-full"
+                      >
                         Done
                       </Button>
                     </DrawerClose>
@@ -674,7 +752,10 @@ export default function Todo() {
                   className="shrink-0 h-9 w-9 rounded-lg hover:bg-muted"
                   disabled={isLoading || isProcessingSpeech}
                 >
-                  <Question className="w-5 h-5 text-muted-foreground" weight="bold" />
+                  <Question
+                    className="w-5 h-5 text-muted-foreground"
+                    weight="bold"
+                  />
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md rounded-2xl border shadow-lg gap-2 p-3 [&>button]:hidden">
@@ -692,7 +773,9 @@ export default function Todo() {
                 </div>
 
                 <DialogHeader className="pb-1 space-y-1">
-                  <DialogTitle className="text-lg font-semibold">Help & FAQ</DialogTitle>
+                  <DialogTitle className="text-lg font-semibold">
+                    Help & FAQ
+                  </DialogTitle>
                   <DialogDescription className="text-muted-foreground text-sm">
                     Frequently asked questions about Vif
                   </DialogDescription>
@@ -704,7 +787,10 @@ export default function Todo() {
 
                 <DialogFooter className="flex items-center justify-end !mt-0 !pt-0">
                   <DialogClose asChild>
-                    <Button variant="secondary" className="rounded-full px-5 h-9 w-full">
+                    <Button
+                      variant="secondary"
+                      className="rounded-full px-5 h-9 w-full"
+                    >
                       Done
                     </Button>
                   </DialogClose>
@@ -716,4 +802,4 @@ export default function Todo() {
       </div>
     </div>
   );
-} 
+}

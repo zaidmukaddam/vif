@@ -25,9 +25,12 @@ export function EmptyState({ selectedDate, focusInput }: EmptyStateProps) {
           />
         </div>
       </div>
-      <h3 className="text-lg font-medium text-foreground mb-1.5">Vif is all clear!</h3>
+      <h3 className="text-lg font-medium text-foreground mb-1.5">
+        Vif is all clear!
+      </h3>
       <p className="text-sm text-muted-foreground text-center max-w-[260px]">
-        Your {format(selectedDate, "EEEE")} is looking empty. Add your first task to get started with Vif!
+        Your {format(selectedDate, "EEEE")} is looking empty. Add your first
+        task to get started with Vif!
       </p>
       <Button
         variant="outline"
@@ -40,4 +43,4 @@ export function EmptyState({ selectedDate, focusInput }: EmptyStateProps) {
       </Button>
     </div>
   );
-} 
+}

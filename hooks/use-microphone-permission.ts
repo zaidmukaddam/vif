@@ -20,7 +20,7 @@ export function useMicrophonePermission() {
           try {
             const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
             setPermissionState(result.state as MicrophonePermissionState);
-            
+
             // Listen for permission changes
             result.onchange = () => {
               setPermissionState(result.state as MicrophonePermissionState);

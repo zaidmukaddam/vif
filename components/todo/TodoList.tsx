@@ -29,7 +29,7 @@ export function TodoList({
   setEditText,
   setEditEmoji,
   handleEditTodo,
-  cancelEditing
+  cancelEditing,
 }: TodoListProps) {
   // Create a reference for the edit input
   const editInputRef = useRef<HTMLInputElement>(null);
@@ -41,36 +41,39 @@ export function TodoList({
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     // Initial check
     checkIfMobile();
-    
+
     // Add event listener for window resize
-    window.addEventListener('resize', checkIfMobile);
-    
+    window.addEventListener("resize", checkIfMobile);
+
     // Clean up
-    return () => window.removeEventListener('resize', checkIfMobile);
+    return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
 
   // Create a memoized handler for input changes
-  const handleEditInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target;
-    const newValue = input.value;
-    const newPosition = input.selectionStart;
+  const handleEditInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const input = e.target;
+      const newValue = input.value;
+      const newPosition = input.selectionStart;
 
-    setEditText(newValue);
-    // Schedule cursor position update after state change
-    requestAnimationFrame(() => {
-      if (input && newPosition !== null) {
-        input.setSelectionRange(newPosition, newPosition);
-      }
-    });
-  }, [setEditText]);
+      setEditText(newValue);
+      // Schedule cursor position update after state change
+      requestAnimationFrame(() => {
+        if (input && newPosition !== null) {
+          input.setSelectionRange(newPosition, newPosition);
+        }
+      });
+    },
+    [setEditText]
+  );
 
   // Initialize edit time when starting to edit
   useEffect(() => {
     if (editingTodoId) {
-      const todo = todos.find(t => t.id === editingTodoId);
+      const todo = todos.find((t) => t.id === editingTodoId);
       setEditTime(todo?.time || "");
     }
   }, [editingTodoId, todos]);
@@ -110,7 +113,10 @@ export function TodoList({
                         {editEmoji ? (
                           <span className="text-base">{editEmoji}</span>
                         ) : (
-                          <Smiley className="w-4 h-4 text-muted-foreground" weight="fill" />
+                          <Smiley
+                            className="w-4 h-4 text-muted-foreground"
+                            weight="fill"
+                          />
                         )}
                       </Button>
                     </PopoverTrigger>
@@ -127,23 +133,26 @@ export function TodoList({
                           }}
                           className="h-full"
                         >
-                          <EmojiPickerSearch
-                            placeholder="Search emoji..."
-                          />
+                          <EmojiPickerSearch placeholder="Search emoji..." />
                           <EmojiPickerContent className="h-[220px]" />
                           <EmojiPickerFooter className="border-t-0 p-1.5" />
                         </EmojiPicker>
                       </div>
                     </PopoverContent>
                   </Popover>
-                  
+
                   <Input
                     ref={editInputRef}
                     value={editText}
                     onChange={handleEditInputChange}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        handleEditTodo({...todo, text: editText, emoji: editEmoji, time: editTime});
+                        handleEditTodo({
+                          ...todo,
+                          text: editText,
+                          emoji: editEmoji,
+                          time: editTime,
+                        });
                       } else if (e.key === "Escape") {
                         cancelEditing();
                       }
@@ -152,13 +161,10 @@ export function TodoList({
                     className="flex-1 h-8 py-0 text-sm bg-transparent border-0 shadow-none focus-visible:ring-0 px-2 rounded-none"
                     placeholder="Edit todo..."
                   />
-                  
-                  <TimePicker 
-                    time={editTime}
-                    onChange={setEditTime}
-                  />
+
+                  <TimePicker time={editTime} onChange={setEditTime} />
                 </div>
-                
+
                 <div className="flex gap-1">
                   <Button
                     variant="ghost"
@@ -177,7 +183,12 @@ export function TodoList({
                     className="h-8 w-8 shrink-0 rounded-md"
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
-                      const updatedTodo = { ...todo, text: editText, emoji: editEmoji, time: editTime };
+                      const updatedTodo = {
+                        ...todo,
+                        text: editText,
+                        emoji: editEmoji,
+                        time: editTime,
+                      };
                       handleEditTodo(updatedTodo);
                     }}
                   >
@@ -199,21 +210,25 @@ export function TodoList({
                   )}
                 />
               </div>
-              <div 
-                className="flex-1 flex items-center min-w-0 cursor-pointer" 
+              <div
+                className="flex-1 flex items-center min-w-0 cursor-pointer"
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
                   onToggle(todo.id);
                 }}
               >
                 {todo.emoji && (
-                  <span className="mr-2 text-base flex-shrink-0">{todo.emoji}</span>
+                  <span className="mr-2 text-base flex-shrink-0">
+                    {todo.emoji}
+                  </span>
                 )}
                 <div className="flex flex-col min-w-0">
-                  <span className={cn(
-                    "truncate text-[15px]",
-                    todo.completed && "line-through"
-                  )}>
+                  <span
+                    className={cn(
+                      "truncate text-[15px]",
+                      todo.completed && "line-through"
+                    )}
+                  >
                     {todo.text}
                   </span>
                   {todo.time && (
@@ -229,7 +244,9 @@ export function TodoList({
                 size="icon"
                 className={cn(
                   "h-7 w-7 text-muted-foreground hover:text-foreground",
-                  isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"
+                  isMobile
+                    ? "opacity-100"
+                    : "opacity-0 group-hover:opacity-100 transition-opacity"
                 )}
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
@@ -243,7 +260,9 @@ export function TodoList({
                 size="icon"
                 className={cn(
                   "h-7 w-7 text-muted-foreground hover:text-destructive",
-                  isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"
+                  isMobile
+                    ? "opacity-100"
+                    : "opacity-0 group-hover:opacity-100 transition-opacity"
                 )}
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
@@ -258,4 +277,4 @@ export function TodoList({
       ))}
     </>
   );
-} 
+}

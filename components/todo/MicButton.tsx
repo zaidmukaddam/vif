@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { Microphone, MicrophoneSlash, Warning, ArrowUp } from "@phosphor-icons/react";
+import {
+  Microphone,
+  MicrophoneSlash,
+  Warning,
+  ArrowUp,
+} from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { MicButtonProps } from "@/types";
 
@@ -11,7 +16,7 @@ export function MicButton({
   startRecording,
   stopRecording,
   hasText,
-  onSend
+  onSend,
 }: MicButtonProps) {
   // If checking permissions
   if (micPermission === "checking") {
@@ -35,7 +40,9 @@ export function MicButton({
         size="icon"
         className="h-9 w-9 shrink-0 rounded-none hover:bg-muted-foreground/10 group relative"
         onClick={() => {
-          alert("Microphone access is blocked. To enable voice input:\n\n1. Click the lock/site settings icon in your browser's address bar\n2. Allow microphone access\n3. Refresh this page");
+          alert(
+            "Microphone access is blocked. To enable voice input:\n\n1. Click the lock/site settings icon in your browser's address bar\n2. Allow microphone access\n3. Refresh this page"
+          );
         }}
         title="Microphone access denied. Click for help."
       >
@@ -72,7 +79,10 @@ export function MicButton({
         onClick={stopRecording}
         disabled={isProcessingSpeech}
       >
-        <MicrophoneSlash className="w-5 h-5 text-red-500 animate-pulse" weight="fill" />
+        <MicrophoneSlash
+          className="w-5 h-5 text-red-500 animate-pulse"
+          weight="fill"
+        />
       </Button>
     );
   }
@@ -88,9 +98,11 @@ export function MicButton({
       )}
       onClick={startRecording}
       disabled={isProcessingSpeech}
-      title={isProcessingSpeech ? "Processing speech..." : "Start voice recording"}
+      title={
+        isProcessingSpeech ? "Processing speech..." : "Start voice recording"
+      }
     >
       <Microphone className="w-5 h-5" weight="fill" />
     </Button>
   );
-} 
+}

@@ -14,14 +14,19 @@ interface ThemeButtonProps {
   onClick: () => void;
 }
 
-const ThemeButton: FC<ThemeButtonProps> = ({ mode, icon: Icon, isActive, onClick }) => {
+const ThemeButton: FC<ThemeButtonProps> = ({
+  mode,
+  icon: Icon,
+  isActive,
+  onClick,
+}) => {
   return (
     <button
       onClick={onClick}
       className={cn(
         "rounded-full p-1.5 transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         isActive
-          ? "bg-background text-foreground shadow-sm" 
+          ? "bg-background text-foreground shadow-sm"
           : "text-muted-foreground hover:bg-muted-foreground/10"
       )}
       aria-label={`Switch to ${mode} Mode`}
@@ -40,7 +45,9 @@ export const ThemeToggleButton: FC = (): ReactElement => {
   }, []);
 
   if (!isMounted) {
-    return <div className="h-9 w-[110px] rounded-full bg-muted animate-pulse" />;
+    return (
+      <div className="h-9 w-[110px] rounded-full bg-muted animate-pulse" />
+    );
   }
 
   return (

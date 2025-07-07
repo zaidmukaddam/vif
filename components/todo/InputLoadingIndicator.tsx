@@ -1,6 +1,10 @@
 import React from "react";
 
-export function InputLoadingIndicator({ showText = false }: { showText?: boolean }) {
+export function InputLoadingIndicator({
+  showText = false,
+}: {
+  showText?: boolean;
+}) {
   return (
     <div className="flex items-center justify-center gap-2 px-2 py-1">
       <div className="relative flex">
@@ -16,4 +20,4 @@ export function InputLoadingIndicator({ showText = false }: { showText?: boolean
       )}
     </div>
   );
-} 
+}
